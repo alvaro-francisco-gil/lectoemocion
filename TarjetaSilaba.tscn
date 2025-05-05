@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://cf6sd6prhectb"]
+
+[ext_resource type="PackedScene" uid="uid://leceh1dl0ga0" path="res://TarjetaBase.tscn" id="1_3rs10"]
+[ext_resource type="Script" uid="uid://cp4amc5t8jvxo" path="res://TarjetaSilaba.gd" id="2_o538n"]
+
+[node name="TarjetaBase" instance=ExtResource("1_3rs10")]
+script = ExtResource("2_o538n")
+
+[node name="Label" type="Label" parent="." index="1"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="ColorRect" type="ColorRect" parent="." index="2"]
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(1, 0.192157, 1, 1)

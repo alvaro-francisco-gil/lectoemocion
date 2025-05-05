@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://blllmhqdk87n1"]
+
+[ext_resource type="Script" uid="uid://vnc4xfexvj2o" path="res://GestorJuego.gd" id="1_rwmyg"]
+[ext_resource type="PackedScene" uid="uid://cf6sd6prhectb" path="res://TarjetaSilaba.tscn" id="2_rwmyg"]
+[ext_resource type="PackedScene" uid="uid://cgsd3irsuws0" path="res://HuecoSilaba.tscn" id="3_vuorj"]
+
+[node name="GestorJuego" type="Node2D"]
+script = ExtResource("1_rwmyg")
+escena_tarjeta = ExtResource("2_rwmyg")
+escena_hueco = ExtResource("3_vuorj")
+
+[node name="Huecos" type="Node2D" parent="."]
+
+[node name="Tarjetas" type="Node2D" parent="."]
