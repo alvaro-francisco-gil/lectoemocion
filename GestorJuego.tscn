@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://blllmhqdk87n1"]
+[gd_scene load_steps=6 format=3 uid="uid://blllmhqdk87n1"]
 
 [ext_resource type="Script" uid="uid://vnc4xfexvj2o" path="res://GestorJuego.gd" id="1_rwmyg"]
 [ext_resource type="PackedScene" uid="uid://cf6sd6prhectb" path="res://TarjetaSilaba.tscn" id="2_rwmyg"]
 [ext_resource type="PackedScene" uid="uid://cgsd3irsuws0" path="res://HuecoSilaba.tscn" id="3_vuorj"]
+[ext_resource type="PackedScene" path="res://Vidas.tscn" id="4_abc12"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
 bg_color = Color(0.2, 0.6, 1, 1)
@@ -20,11 +21,13 @@ escena_hueco = ExtResource("3_vuorj")
 
 [node name="Tarjetas" type="Node2D" parent="."]
 
+[node name="Vidas" parent="." instance=ExtResource("4_abc12")]
+
 [node name="SiguientePalabra" type="Button" parent="."]
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 80.0
 offset_right = 200.0
-offset_bottom = 60.0
+offset_bottom = 120.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_1")
 text = "Siguiente Palabra"
 

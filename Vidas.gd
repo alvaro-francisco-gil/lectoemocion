@@ -4,33 +4,25 @@ var vidas = 3
 var corazones = []
 
 func _ready():
-	# Posicionar el nodo en la parte superior de la pantalla
-	position = Vector2(20, 20)  # 20 píxeles desde el borde superior izquierdo
+	# Obtener el tamaño de la ventana
+	var ventana = get_viewport_rect().size
+	
+	# Posicionar el contenedor en la parte superior central
+	var container = $Container
 	
 	# Crear los corazones iniciales
 	for i in range(vidas):
-		var corazon = ColorRect.new()
-		corazon.size = Vector2(40, 40)
-		corazon.position = Vector2(i * 50, 0)  # Espaciado de 50 píxeles entre corazones
-		corazon.color = Color(1, 0, 0, 1)  # Rojo sólido
-		
-		# Crear la forma del corazón usando un Polygon2D
-		var heart_shape = Polygon2D.new()
-		var points = PackedVector2Array([
-			Vector2(20, 10),  # Punto superior
-			Vector2(10, 20),  # Izquierda
-			Vector2(20, 30),  # Abajo
-			Vector2(30, 20),  # Derecha
-			Vector2(20, 10)   # Volver al inicio
-		])
-		heart_shape.polygon = points
-		heart_shape.color = Color(1, 0, 0, 1)
-		heart_shape.position = Vector2(0, 0)
-		
-		corazon.add_child(heart_shape)
-		add_child(corazon)
+		var corazon = TextureRect.new()
+		corazon.texture = preload("res://assets/corazon.png")
+		corazon.custom_minimum_size = Vector2(40, 40)
+		corazon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		container.add_child(corazon)
 		corazones.append(corazon)
-		print("Corazón creado en posición: ", corazon.position)
+	
+	# Ajustar el tamaño del contenedor basado en sus hijos
+	await get_tree().process_frame
+	container.position.x = (ventana.x - container.size.x) / 2
+	container.position.y = 20  # 20 píxeles desde el borde superior
 
 func actualizar_vidas(vidas_restantes):
 	print("Actualizando vidas: ", vidas_restantes)

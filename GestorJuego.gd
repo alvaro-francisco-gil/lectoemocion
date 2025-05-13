@@ -41,7 +41,6 @@ func _ready():
 	
 	# Inicializar el juego
 	seleccionar_palabra_aleatoria()
-	total_tarjetas = nodo_tarjetas.get_child_count()
 	emit_signal("vidas_actualizadas", vidas)
 
 func seleccionar_palabra_aleatoria():
@@ -67,6 +66,7 @@ func crear_partida(silabas: Array):
 		c.queue_free()
 	
 	tarjetas_colocadas = 0  # Reiniciar contador
+	total_tarjetas = silabas.size()  # Establecer el total de tarjetas basado en las sílabas
 	
 	# Crea los huecos en orden
 	for i in range(silabas.size()):
@@ -96,6 +96,7 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 			# Colocación correcta
 			hueco.aceptar_tarjeta(tarjeta)
 			tarjetas_colocadas += 1
+			print("Tarjeta colocada correctamente. Total: ", tarjetas_colocadas, "/", total_tarjetas)
 			
 			# Verificar si se completó el nivel
 			if tarjetas_colocadas == total_tarjetas:
@@ -119,16 +120,8 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 				hueco.liberar_tarjeta()
 
 func _on_tarjeta_colocada(hueco_id: int, tarjeta_id: int):
-	if hueco_id == tarjeta_id:
-		tarjetas_colocadas += 1
-		print("Tarjeta colocada correctamente. Total: ", tarjetas_colocadas)
-		
-		# Verificar si todas las tarjetas están colocadas
-		if tarjetas_colocadas == palabras[palabra_actual].size():
-			print("¡Palabra completada!")
-			# Esperar un momento antes de pasar a la siguiente palabra
-			await get_tree().create_timer(1.0).timeout
-			siguiente_palabra()
+	# Ya no necesitamos esta función ya que la lógica está en intentar_colocar_tarjeta
+	pass
 
 # Función para añadir nuevas palabras al diccionario
 func añadir_palabra(palabra: String, silabas: Array):
