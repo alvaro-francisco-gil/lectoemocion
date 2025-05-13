@@ -6,44 +6,81 @@ extends Node2D
 var dragging = false
 var offset = Vector2.ZERO
 var start_position = Vector2.ZERO
+var current_slot = null
+var can_drag = true
 
 func _ready():
 	start_position = position
-	print("Tarjeta creada: ", silaba_texto, " en posición: ", position)
 	# Actualizar el texto de la etiqueta
 	if has_node("Label"):
 		$Label.text = silaba_texto
+	
+	# Configurar el Area2D
+	if has_node("Area2D"):
+		$Area2D.monitoring = true
+		$Area2D.monitorable = true
+		$Area2D.connect("area_entered", Callable(self, "_on_area_entered"))
+		$Area2D.connect("area_exited", Callable(self, "_on_area_exited"))
+		
+		# Asegurarse de que el CollisionShape2D tenga el tamaño correcto
+		if has_node("Area2D/CollisionShape2D"):
+			var shape = $Area2D/CollisionShape2D.shape
+			if shape is RectangleShape2D:
+				shape.size = Vector2(100, 60)  # Tamaño exacto de la tarjeta
+
+func _process(_delta):
+	# Buscar huecos cercanos
+	if dragging:
+		var gestor = get_node("/root/GestorJuego")
+		if gestor and gestor.nodo_huecos:
+			var hueco_mas_cercano = null
+			var distancia_minima = 50.0  # Reducir la distancia de aceptación
+			
+			for hueco in gestor.nodo_huecos.get_children():
+				var distancia = global_position.distance_to(hueco.global_position)
+				if distancia < distancia_minima:
+					distancia_minima = distancia
+					hueco_mas_cercano = hueco
+			
+			if hueco_mas_cercano:
+				current_slot = hueco_mas_cercano
+			else:
+				current_slot = null
 
 func _input(event):
+	if not can_drag:
+		return
+		
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed and get_rect().has_point(to_local(event.position)):
-				print("Iniciando arrastre de tarjeta: ", silaba_texto)
 				dragging = true
 				offset = get_global_mouse_position() - global_position
 			elif dragging:
-				print("Soltando tarjeta: ", silaba_texto)
 				dragging = false
-				# Al soltar, avisamos al gestor para comprobar si está sobre un hueco
-				var gestor = get_node("/root/GestorJuego")
-				if gestor:
-					print("Llamando a comprobar_encaje en GestorJuego")
-					gestor.comprobar_encaje(self)
+				if current_slot != null:
+					var gestor = get_node("/root/GestorJuego")
+					if gestor:
+						gestor.intentar_colocar_tarjeta(self, current_slot)
 				else:
-					print("ERROR: No se encontró el nodo GestorJuego")
-				# Si no encajó, vuelve a su posición inicial
-				if not is_in_slot():
-					position = start_position
+					volver_a_posicion_inicial()
 	elif event is InputEventMouseMotion and dragging:
 		global_position = get_global_mouse_position() - offset
 
-func is_in_slot() -> bool:
-	# Puedes implementar aquí la lógica para saber si la tarjeta está en un hueco
-	# O dejarlo vacío y que el gestor lo controle
-	return false
+func volver_a_posicion_inicial():
+	position = start_position
+	can_drag = true
+
+func _on_area_entered(area):
+	if area.get_parent() is Node2D and area.get_parent().has_method("aceptar_tarjeta"):
+		current_slot = area.get_parent()
+
+func _on_area_exited(area):
+	if area.get_parent() == current_slot:
+		current_slot = null
 
 func get_rect() -> Rect2:
 	var color_rect = $ColorRect
 	if color_rect:
 		return Rect2(Vector2.ZERO, color_rect.size)
-	return Rect2(Vector2.ZERO, Vector2(120, 80))  # Tamaño por defecto
+	return Rect2(Vector2.ZERO, Vector2(100, 60))  # Tamaño por defecto ajustado

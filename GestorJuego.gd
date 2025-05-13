@@ -1,10 +1,14 @@
 extends Node2D
 
+signal vidas_actualizadas(vidas_restantes)
+signal juego_terminado
+
 @export var escena_tarjeta : PackedScene
 @export var escena_hueco : PackedScene
 
 @onready var nodo_huecos = $Huecos
 @onready var nodo_tarjetas = $Tarjetas
+@onready var nodo_vidas = $Vidas
 
 # Diccionario de palabras y sus sílabas
 var palabras = {
@@ -19,13 +23,26 @@ var palabras = {
 }
 
 var palabra_actual = ""
-var tarjeta_actual = null  # Para rastrear la tarjeta que se está arrastrando
-var tarjetas_colocadas = 0  # Contador de tarjetas colocadas correctamente
+var tarjetas_colocadas = 0
+var total_tarjetas = 0
+var vidas = 3
 
 func _ready():
 	print("GestorJuego iniciado")
-	# Selecciona una palabra aleatoria para empezar
+	
+	# Asegurarse de que el nodo de vidas existe
+	if not nodo_vidas:
+		print("ERROR: Nodo de vidas no encontrado!")
+		return
+		
+	# Conectar señales
+	connect("vidas_actualizadas", Callable(nodo_vidas, "actualizar_vidas"))
+	connect("juego_terminado", Callable(self, "_on_juego_terminado"))
+	
+	# Inicializar el juego
 	seleccionar_palabra_aleatoria()
+	total_tarjetas = nodo_tarjetas.get_child_count()
+	emit_signal("vidas_actualizadas", vidas)
 
 func seleccionar_palabra_aleatoria():
 	var palabras_disponibles = palabras.keys()
@@ -73,6 +90,34 @@ func crear_partida(silabas: Array):
 		nodo_tarjetas.add_child(tarjeta)
 		print("Tarjeta creada: ", silabas_desordenadas[i], " con ID: ", idx)
 
+func intentar_colocar_tarjeta(tarjeta, hueco):
+	if hueco.tarjeta_actual == null:
+		if tarjeta.silaba_id == hueco.hueco_id:
+			# Colocación correcta
+			hueco.aceptar_tarjeta(tarjeta)
+			tarjetas_colocadas += 1
+			
+			# Verificar si se completó el nivel
+			if tarjetas_colocadas == total_tarjetas:
+				print("¡Nivel completado!")
+				await get_tree().create_timer(1.0).timeout
+				siguiente_palabra()
+		else:
+			# Colocación incorrecta
+			hueco.mostrar_error()
+			vidas -= 1
+			print("Vidas restantes: ", vidas)
+			emit_signal("vidas_actualizadas", vidas)
+			
+			if vidas <= 0:
+				print("¡Juego terminado! Sin vidas restantes")
+				emit_signal("juego_terminado")
+			else:
+				# Devolver la tarjeta a su posición original
+				tarjeta.position = tarjeta.start_position
+				tarjeta.can_drag = true
+				hueco.liberar_tarjeta()
+
 func _on_tarjeta_colocada(hueco_id: int, tarjeta_id: int):
 	if hueco_id == tarjeta_id:
 		tarjetas_colocadas += 1
@@ -89,41 +134,8 @@ func _on_tarjeta_colocada(hueco_id: int, tarjeta_id: int):
 func añadir_palabra(palabra: String, silabas: Array):
 	palabras[palabra] = silabas
 
-# Función para comprobar si una tarjeta está en el hueco correcto
-func comprobar_encaje(tarjeta):
-	print("Comprobando encaje de tarjeta: ", tarjeta.silaba_texto, " con ID: ", tarjeta.silaba_id)
-	var tarjeta_pos = tarjeta.global_position
-	var encajada = false
-	var hueco_mas_cercano = null
-	var distancia_minima = 50.0  # Reducimos la distancia para hacer más preciso el encaje
-	
-	# Comprueba cada hueco
-	for hueco in nodo_huecos.get_children():
-		var distancia = tarjeta_pos.distance_to(hueco.global_position)
-		print("Distancia a hueco ", hueco.hueco_id, ": ", distancia)
-		if distancia < distancia_minima:
-			distancia_minima = distancia
-			hueco_mas_cercano = hueco
-	
-	# Si encontramos un hueco cercano
-	if hueco_mas_cercano:
-		print("Hueco más cercano encontrado: ", hueco_mas_cercano.hueco_id)
-		# Si el hueco está vacío o tiene la misma tarjeta
-		if hueco_mas_cercano.tarjeta_actual == null or hueco_mas_cercano.tarjeta_actual == tarjeta:
-			# Si el ID de la tarjeta coincide con el ID del hueco
-			if tarjeta.silaba_id == hueco_mas_cercano.hueco_id:
-				print("¡Encaje correcto!")
-				hueco_mas_cercano.aceptar_tarjeta(tarjeta)
-				encajada = true
-			else:
-				print("Encaje incorrecto - IDs no coinciden")
-				# Mostrar error si la tarjeta no coincide
-				hueco_mas_cercano.mostrar_error()
-				tarjeta.position = tarjeta.start_position
-	else:
-		print("No se encontró hueco cercano")
-	
-	# Si la tarjeta no encajó en ningún hueco, vuelve a su posición inicial
-	if not encajada:
-		print("Tarjeta no encajada, volviendo a posición inicial")
-		tarjeta.position = tarjeta.start_position
+func _on_juego_terminado():
+	print("¡Juego terminado! Reiniciando...")
+	# Esperar un momento antes de reiniciar
+	await get_tree().create_timer(1.0).timeout
+	get_tree().reload_current_scene()
