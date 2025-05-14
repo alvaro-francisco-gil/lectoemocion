@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://deqsg3mrkp5dn"
-path="res://.godot/imported/corazon.png-0600697f06aef9822e99c000a57c8019.ctex"
+uid="uid://0ms0t2s44gtx"
+path="res://.godot/imported/e-le-fan-te.png-f79a0bc57649e7cb50270511c95e3e6b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/corazon.png"
-dest_files=["res://.godot/imported/corazon.png-0600697f06aef9822e99c000a57c8019.ctex"]
+source_file="res://assets/animales/e-le-fan-te.png"
+dest_files=["res://.godot/imported/e-le-fan-te.png-f79a0bc57649e7cb50270511c95e3e6b.ctex"]
 
 [params]
 

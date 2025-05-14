@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://deqsg3mrkp5dn"
-path="res://.godot/imported/corazon.png-0600697f06aef9822e99c000a57c8019.ctex"
+uid="uid://b6wphpa5ocfw4"
+path="res://.godot/imported/fondo_selva.png-25e85d17a885160933f5333858cd7656.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/corazon.png"
-dest_files=["res://.godot/imported/corazon.png-0600697f06aef9822e99c000a57c8019.ctex"]
+source_file="res://assets/fondos/fondo_selva.png"
+dest_files=["res://.godot/imported/fondo_selva.png-25e85d17a885160933f5333858cd7656.ctex"]
 
 [params]
 
