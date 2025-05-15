@@ -1,31 +1,22 @@
-[gd_scene load_steps=5 format=3 uid="uid://blllmhqdk87n1"]
+[gd_scene load_steps=6 format=3 uid="uid://blllmhqdk87n1"]
 
 [ext_resource type="Script" uid="uid://vnc4xfexvj2o" path="res://GestorJuego.gd" id="1_rwmyg"]
 [ext_resource type="PackedScene" uid="uid://cf6sd6prhectb" path="res://TarjetaSilaba.tscn" id="2_rwmyg"]
 [ext_resource type="PackedScene" uid="uid://cgsd3irsuws0" path="res://HuecoSilaba.tscn" id="3_vuorj"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
-bg_color = Color(0.2, 0.6, 1, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+[ext_resource type="PackedScene" uid="uid://b2j6h8g4y3n5k" path="res://Vidas.tscn" id="4_abc12"]
+[ext_resource type="Texture2D" uid="uid://b6wphpa5ocfw4" path="res://assets/fondos/fondo_selva.png" id="5_bg"]
 
 [node name="GestorJuego" type="Node2D"]
 script = ExtResource("1_rwmyg")
 escena_tarjeta = ExtResource("2_rwmyg")
 escena_hueco = ExtResource("3_vuorj")
 
+[node name="Fondo" type="Sprite2D" parent="."]
+z_index = -1
+texture = ExtResource("5_bg")
+
 [node name="Huecos" type="Node2D" parent="."]
 
 [node name="Tarjetas" type="Node2D" parent="."]
 
-[node name="SiguientePalabra" type="Button" parent="."]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 200.0
-offset_bottom = 60.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_1")
-text = "Siguiente Palabra"
-
-[connection signal="pressed" from="SiguientePalabra" to="." method="siguiente_palabra"]
+[node name="Vidas" parent="." instance=ExtResource("4_abc12")]
