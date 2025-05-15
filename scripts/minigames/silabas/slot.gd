@@ -1,14 +1,13 @@
 extends Node2D
 
-const TarjetaBase = preload("res://TarjetaBase.gd")
+const TarjetaBase = preload("res://scripts/shared/base_card.gd")
 
-signal tarjeta_colocada(hueco_id, tarjeta_id)
+signal tarjeta_colocada(hueco_id: int, tarjeta_id: int)
 
 @onready var area = $Area2D
-@onready var sprite = $Sprite2D
 @onready var label = $Label
 
-var hueco_id = -1
+var hueco_id: int
 var tarjeta_actual = null
 
 func _ready():
@@ -48,21 +47,25 @@ func _on_area_exited(area_other):
 		if tarjeta.current_slot == self:
 			tarjeta.current_slot = null
 
+func _input_event(_viewport, event, _shape_idx):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			if tarjeta_actual != null:
+				liberar_tarjeta()
+
 func aceptar_tarjeta(tarjeta):
 	tarjeta_actual = tarjeta
-	tarjeta.global_position = global_position  # Usar global_position en lugar de position
+	tarjeta.current_slot = self
 	tarjeta.can_drag = false
+	tarjeta.position = position
 	emit_signal("tarjeta_colocada", hueco_id, tarjeta.silaba_id)
 
 func mostrar_error():
-	if sprite:
-		var tween = create_tween()
-		tween.parallel().tween_property(sprite, "modulate", Color(1, 0, 0, 1), 0.1)
-		tween.parallel().tween_property(sprite, "modulate", Color(1, 1, 1, 1), 0.1)
-		tween.set_loops(3)
+	$ColorRect.color = Color(1, 0.3, 0.3, 1)
+	await get_tree().create_timer(0.5).timeout
+	$ColorRect.color = Color(0.8, 0.8, 0.8, 1)
 
 func liberar_tarjeta():
-	if tarjeta_actual != null:
-		tarjeta_actual.position = tarjeta_actual.start_position
-		tarjeta_actual.can_drag = true
-	tarjeta_actual = null
+	if tarjeta_actual:
+		tarjeta_actual.current_slot = null
+		tarjeta_actual = null

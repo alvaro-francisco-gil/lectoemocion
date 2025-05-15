@@ -10,6 +10,7 @@ signal juego_terminado
 @onready var nodo_tarjetas = $Tarjetas
 @onready var nodo_vidas = $Vidas
 @onready var nodo_fondo = $Fondo
+@onready var boton_volver = $UI/BotonVolver
 
 # Diccionario de palabras y sus sílabas
 var palabras = {
@@ -44,6 +45,7 @@ func _ready():
 	# Conectar señales
 	connect("vidas_actualizadas", Callable(nodo_vidas, "actualizar_vidas"))
 	connect("juego_terminado", Callable(self, "_on_juego_terminado"))
+	boton_volver.pressed.connect(_on_boton_volver_pressed)
 	
 	# Ajustar el fondo a la pantalla
 	ajustar_fondo()
@@ -132,6 +134,7 @@ func crear_partida(silabas: Array):
 		var tarjeta = escena_tarjeta.instantiate()
 		tarjeta.silaba_id = idx
 		tarjeta.silaba_texto = silabas_desordenadas[i]
+		tarjeta.actualizar_label()
 		tarjeta.position = Vector2(posicion_inicial_x + i * 120, 100)  # Posición arriba
 		nodo_tarjetas.add_child(tarjeta)
 		print("Tarjeta creada: ", silabas_desordenadas[i], " con ID: ", idx)
@@ -167,7 +170,7 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 				tarjeta.can_drag = true
 				hueco.liberar_tarjeta()
 
-func _on_tarjeta_colocada(hueco_id: int, tarjeta_id: int):
+func _on_tarjeta_colocada(hueco_id: int, _tarjeta_id: int):
 	# Ya no necesitamos esta función ya que la lógica está en intentar_colocar_tarjeta
 	pass
 
@@ -183,3 +186,6 @@ func _on_juego_terminado():
 	# Esperar un momento antes de reiniciar
 	await get_tree().create_timer(1.0).timeout
 	get_tree().reload_current_scene()
+
+func _on_boton_volver_pressed():
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")

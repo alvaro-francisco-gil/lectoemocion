@@ -3,18 +3,29 @@ extends Node2D
 @export var silaba_id: int = 0  # Identificador único de la sílaba (por ejemplo, 0, 1, 2...)
 @export var silaba_texto: String = ""  # Texto de la sílaba (opcional, para mostrar)
 
-var dragging = false
-var offset = Vector2.ZERO
 var start_position = Vector2.ZERO
 var current_slot = null
 var can_drag = true
+var is_dragging = false
+var drag_offset: Vector2
 
 func _ready():
 	start_position = position
-	# Actualizar el texto de la etiqueta
-	if has_node("Label"):
-		$Label.text = silaba_texto
-	
+	actualizar_label()
+	print("[DEBUG] Card _ready. Children:", get_children())
+	if has_node("Area2D"):
+		print("[DEBUG] Area2D found.")
+		if has_node("Area2D/CollisionShape2D"):
+			var shape = $Area2D/CollisionShape2D.shape
+			print("[DEBUG] CollisionShape2D found. Shape:", shape, " Disabled:", $Area2D/CollisionShape2D.disabled)
+			if shape is RectangleShape2D:
+				print("[DEBUG] RectangleShape2D extents:", shape.extents)
+		else:
+			print("[DEBUG] CollisionShape2D NOT found under Area2D!")
+		# Manual signal connection for debugging
+		$Area2D.connect("input_event", Callable(self, "_input_event"))
+	else:
+		print("[DEBUG] Area2D NOT found!")
 	# Configurar el Area2D
 	if has_node("Area2D"):
 		$Area2D.monitoring = true
@@ -28,47 +39,27 @@ func _ready():
 			if shape is RectangleShape2D:
 				shape.size = Vector2(100, 60)  # Tamaño exacto de la tarjeta
 
-func _process(_delta):
-	# Buscar huecos cercanos
-	if dragging:
-		var gestor = get_node("/root/GestorJuego")
-		if gestor and gestor.nodo_huecos:
-			var hueco_mas_cercano = null
-			var distancia_minima = 50.0  # Reducir la distancia de aceptación
-			
-			for hueco in gestor.nodo_huecos.get_children():
-				var distancia = global_position.distance_to(hueco.global_position)
-				if distancia < distancia_minima:
-					distancia_minima = distancia
-					hueco_mas_cercano = hueco
-			
-			if hueco_mas_cercano:
-				current_slot = hueco_mas_cercano
-			else:
-				current_slot = null
+func actualizar_label():
+	if has_node("Label"):
+		$Label.text = silaba_texto
 
-func _input(event):
-	if not can_drag:
-		return
-		
+func _process(_delta):
+	if is_dragging:
+		position = get_global_mouse_position() + drag_offset
+
+func _input_event(viewport, event, shape_idx):
+	print("[DEBUG] _input_event called on card!", event)
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed and get_rect().has_point(to_local(event.position)):
-				dragging = true
-				offset = get_global_mouse_position() - global_position
-			elif dragging:
-				dragging = false
-				if current_slot != null:
-					var gestor = get_node("/root/GestorJuego")
-					if gestor:
-						gestor.intentar_colocar_tarjeta(self, current_slot)
-				else:
-					volver_a_posicion_inicial()
-	elif event is InputEventMouseMotion and dragging:
-		global_position = get_global_mouse_position() - offset
+			if event.pressed and can_drag:
+				is_dragging = true
+				drag_offset = position - get_global_mouse_position()
+			else:
+				is_dragging = false
 
 func volver_a_posicion_inicial():
 	position = start_position
+	current_slot = null
 	can_drag = true
 
 func _on_area_entered(area):
