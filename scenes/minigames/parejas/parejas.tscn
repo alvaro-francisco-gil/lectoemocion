@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8q6y4n2x1m3p"]
+
+[ext_resource type="Script" path="res://scripts/minigames/parejas/parejas.gd" id="1_3k4m3"]
+[ext_resource type="PackedScene" uid="uid://b2j6h8g4y3n5k" path="res://scenes/shared/lives.tscn" id="2_4k5m3"]
+
+[node name="Parejas" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3k4m3")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Lives" parent="VBoxContainer/TopBar" instance=ExtResource("2_4k5m3")]
+layout_mode = 2
+
+[node name="ImageCards" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="TextCards" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20 
