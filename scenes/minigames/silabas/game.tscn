@@ -10,7 +10,14 @@ script = ExtResource("1_2u4vx")
 escena_tarjeta = ExtResource("2_3u4vx")
 escena_hueco = ExtResource("3_4u4vx")
 
+[node name="Background" type="ColorRect" parent="."]
+z_index = -1
+color = Color(0.98, 0.95, 0.95, 1.0) # Soft pastel pink
+anchor_right = 1.0
+anchor_bottom = 1.0
+
 [node name="Fondo" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(576, 324)
 scale = Vector2(1.2, 1.2)
 

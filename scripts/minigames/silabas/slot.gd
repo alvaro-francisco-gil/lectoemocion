@@ -28,10 +28,10 @@ func _ready():
 
 func _process(_delta):
 	# Buscar tarjetas cercanas
-	var gestor = get_node("/root/GestorJuego")
+	var gestor = get_tree().get_current_scene()
 	if gestor and gestor.nodo_tarjetas:
 		for tarjeta in gestor.nodo_tarjetas.get_children():
-			if tarjeta is TarjetaBase and tarjeta.dragging:
+			if tarjeta is TarjetaBase and tarjeta.is_dragging:
 				var distancia = global_position.distance_to(tarjeta.global_position)
 				if distancia < 50.0:  # Reducir la distancia de aceptación
 					tarjeta.current_slot = self
@@ -61,9 +61,11 @@ func aceptar_tarjeta(tarjeta):
 	emit_signal("tarjeta_colocada", hueco_id, tarjeta.silaba_id)
 
 func mostrar_error():
-	$ColorRect.color = Color(1, 0.3, 0.3, 1)
+	var stylebox = $Panel.get("theme_override_styles/panel")
+	var original_color = stylebox.bg_color
+	stylebox.bg_color = Color(1, 0.3, 0.3, 1)
 	await get_tree().create_timer(0.5).timeout
-	$ColorRect.color = Color(0.8, 0.8, 0.8, 1)
+	stylebox.bg_color = original_color
 
 func liberar_tarjeta():
 	if tarjeta_actual:

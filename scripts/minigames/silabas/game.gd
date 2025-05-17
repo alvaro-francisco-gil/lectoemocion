@@ -133,7 +133,7 @@ func crear_partida(silabas: Array):
 		var idx = silabas.find(silabas_desordenadas[i])
 		var tarjeta = escena_tarjeta.instantiate()
 		tarjeta.silaba_id = idx
-		tarjeta.silaba_texto = silabas_desordenadas[i]
+		tarjeta.card_text = silabas_desordenadas[i]
 		tarjeta.actualizar_label()
 		tarjeta.position = Vector2(posicion_inicial_x + i * 120, 100)  # Posición arriba
 		nodo_tarjetas.add_child(tarjeta)
