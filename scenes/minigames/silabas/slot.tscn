@@ -1,0 +1,50 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgsd3irsuws0"]
+
+[ext_resource type="Script" path="res://scripts/minigames/silabas/slot.gd" id="1_2u4vx"]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2(50, 30)
+
+[sub_resource type="StyleBoxFlat" id=2]
+bg_color = Color(0.8, 1.0, 0.8, 1.0) # pastel green
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 1, 0, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 2
+shadow_offset = Vector2(2, 2)
+
+[node name="Slot" type="Node2D"]
+script = ExtResource("1_2u4vx")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = -45.0
+offset_top = -25.0
+offset_right = 45.0
+offset_bottom = 25.0
+theme_override_styles/panel = SubResource(2)
+mouse_filter = 2
+
+[node name="Area2D" type="Area2D" parent="."]
+position = Vector2(0, 0)
+input_event = [ "NodePath:..", "_input_event" ]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(0, 0)
+shape = SubResource(1)
+
+[node name="Label" type="Label" parent="."]
+offset_left = -40.0
+offset_top = -20.0
+offset_right = 40.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 24
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
