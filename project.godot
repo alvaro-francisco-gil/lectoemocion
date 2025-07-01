@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="juego_elefante"
-run/main_scene="uid://blllmhqdk87n1"
+config/name="LectoEmoción"
+run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
