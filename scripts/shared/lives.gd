@@ -13,6 +13,5 @@ func _ready():
 		heart.texture = heart_texture
 
 func actualizar_vidas(vidas_restantes: int):
-	print("[DEBUG] actualizar_vidas llamado con vidas_restantes=", vidas_restantes)
 	for i in range(hearts.size()):
 		hearts[i].visible = i < vidas_restantes 

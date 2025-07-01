@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://cgsd3irsuws0" path="res://scenes/minigames/silabas/slot.tscn" id="3_4u4vx"]
 [ext_resource type="PackedScene" uid="uid://b2j6h8g4y3n5k" path="res://scenes/shared/lives.tscn" id="4_5u4vx"]
 [ext_resource type="Texture2D" path="res://assets/fondos/fondo_de_nubes_de_colores.jpg" id="5"]
-[ext_resource type="Texture2D" path="res://assets/tira_silabas.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/utils/tira_silabas.png" id="6"]
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_2u4vx")

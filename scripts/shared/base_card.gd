@@ -13,9 +13,6 @@ func _ready():
 	actualizar_label()
 	start_position = position  # Guardar la posición inicial
 	
-	if get_parent():
-		print("[DEBUG] Card parent type:", get_parent().get_class(), "name:", get_parent().name)
-	
 	# Configurar el Area2D
 	if has_node("Area2D"):
 		$Area2D.monitoring = true
@@ -23,15 +20,11 @@ func _ready():
 		$Area2D.connect("area_entered", Callable(self, "_on_area_entered"))
 		$Area2D.connect("area_exited", Callable(self, "_on_area_exited"))
 		$Area2D.connect("input_event", Callable(self, "_input_event"))
-		print("[DEBUG] Area2D configurado correctamente")
 		# Asegurarse de que el CollisionShape2D tenga el tamaño correcto
 		if has_node("Area2D/CollisionShape2D"):
 			var shape = $Area2D/CollisionShape2D.shape
 			if shape is RectangleShape2D:
 				shape.size = Vector2(100, 60)  # Tamaño exacto de la tarjeta
-				print("[DEBUG] CollisionShape2D configurado con tamaño: ", shape.size)
-	else:
-		print("[ERROR] No se encontró Area2D en la tarjeta")
 
 func actualizar_label():
 	if has_node("Label"):
@@ -43,15 +36,12 @@ func _input(event):
 		position = get_global_mouse_position() + drag_offset
 
 func _input_event(viewport, event, shape_idx):
-	print("[DEBUG] Base card input_event: ", event)
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed and can_drag:
-				print("[DEBUG] Iniciando drag en base card")
 				is_dragging = true
 				drag_offset = position - get_global_mouse_position()
 			else:
-				print("[DEBUG] Terminando drag en base card")
 				is_dragging = false
 
 func volver_a_posicion_inicial():

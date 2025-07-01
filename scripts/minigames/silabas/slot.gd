@@ -30,14 +30,12 @@ func _on_area_entered(area_other):
 	if area_other.get_parent() is TarjetaBase:
 		var tarjeta = area_other.get_parent()
 		tarjeta.current_slot = self
-		print("Tarjeta entró en hueco: ", hueco_id)
 
 func _on_area_exited(area_other):
 	if area_other.get_parent() is TarjetaBase:
 		var tarjeta = area_other.get_parent()
 		if tarjeta.current_slot == self:
 			tarjeta.current_slot = null
-			print("Tarjeta salió del hueco: ", hueco_id)
 
 
 
@@ -46,7 +44,6 @@ func aceptar_tarjeta(tarjeta):
 	tarjeta.current_slot = self
 	tarjeta.can_drag = false
 	tarjeta.position = position
-	print("Tarjeta aceptada en hueco: ", hueco_id)
 	emit_signal("tarjeta_colocada", hueco_id, tarjeta.silaba_id)
 
 func mostrar_error():

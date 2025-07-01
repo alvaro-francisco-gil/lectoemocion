@@ -12,27 +12,13 @@ signal juego_terminado
 @onready var nodo_fondo = $Fondo
 @onready var boton_volver = $UI/BotonVolver
 
-# Diccionario de palabras y sus sílabas
-var palabras = {
-	"elefante": {
-		"silabas": ["e", "le", "fan", "te"],
-		"imagen": "res://assets/animales/e-le-fan-te.png"
-	},
-	"mariposa": {
-		"silabas": ["ma", "ri", "po", "sa"],
-		"imagen": "res://assets/animales/ma-ri-po-sa.png"
-	},
-	"cerdo": {
-		"silabas": ["cer", "do"],
-		"imagen": "res://assets/animales/cer-do.png"
-	}
-}
-
+# Dictionary to store words and their data (loaded dynamically)
+var palabras = {}
 var palabra_actual = ""
 var tarjetas_colocadas = 0
 var total_tarjetas = 0
 var vidas = 3
-var imagen_actual: Sprite2D
+var imagen_actual: Control
 
 func _ready():
 	print("GestorJuego iniciado")
@@ -63,6 +49,9 @@ func _ready():
 		$FondoNubes.scale = Vector2(escala, escala)
 		$FondoNubes.position = ventana / 2
 	
+	# Cargar palabras dinámicamente desde assets/images
+	cargar_palabras_desde_imagenes()
+	
 	# Inicializar el juego
 	seleccionar_palabra_aleatoria()
 	emit_signal("vidas_actualizadas", vidas)
@@ -73,6 +62,33 @@ func _ready():
 		$Background.size = get_viewport_rect().size
 	get_viewport().connect("size_changed", Callable(self, "_on_viewport_size_changed"))
 	centrar_vidas()
+
+func cargar_palabras_desde_imagenes():
+	var dir = DirAccess.open("res://assets/images")
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".png") or file_name.ends_with(".jpg") or file_name.ends_with(".jpeg"):
+				# Extraer la palabra y sílabas del nombre del archivo
+				var nombre_base = file_name.get_basename()
+				if nombre_base.contains("-"):
+					var silabas = nombre_base.split("-")
+					var palabra = nombre_base.replace("-", "")
+					
+					# Solo incluir palabras con al menos 2 sílabas
+					if silabas.size() >= 2:
+						palabras[palabra] = {
+							"silabas": silabas,
+							"imagen": "res://assets/images/" + file_name
+						}
+						print("Palabra cargada: ", palabra, " con sílabas: ", silabas)
+			
+			file_name = dir.get_next()
+		
+		print("Total de palabras cargadas: ", palabras.size())
+	else:
+		print("ERROR: No se pudo abrir el directorio assets/images")
 
 func ajustar_fondo():
 	if nodo_fondo and nodo_fondo.texture:
@@ -85,6 +101,10 @@ func ajustar_fondo():
 
 func seleccionar_palabra_aleatoria():
 	var palabras_disponibles = palabras.keys()
+	if palabras_disponibles.size() == 0:
+		print("ERROR: No hay palabras disponibles!")
+		return
+		
 	palabra_actual = palabras_disponibles[randi() % palabras_disponibles.size()]
 	print("Palabra seleccionada: ", palabra_actual)
 	crear_partida(palabras[palabra_actual]["silabas"])
@@ -95,27 +115,60 @@ func actualizar_imagen(ruta_imagen: String):
 	if imagen_actual:
 		imagen_actual.queue_free()
 	
+	# Crear contenedor para la imagen con borde
+	var contenedor = Control.new()
+	contenedor.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	
+	# Crear el panel con borde verde transparente
+	var panel = Panel.new()
+	var stylebox = StyleBoxFlat.new()
+	stylebox.bg_color = Color(0, 0, 0, 0)  # Transparente
+	stylebox.border_width_left = 8
+	stylebox.border_width_top = 8
+	stylebox.border_width_right = 8
+	stylebox.border_width_bottom = 8
+	stylebox.border_color = Color(0.2, 0.8, 0.2, 1.0)  # Verde para el borde
+	stylebox.corner_radius_top_left = 15
+	stylebox.corner_radius_top_right = 15
+	stylebox.corner_radius_bottom_right = 15
+	stylebox.corner_radius_bottom_left = 15
+	panel.add_theme_stylebox_override("panel", stylebox)
+	
 	# Crear nueva imagen
-	imagen_actual = Sprite2D.new()
+	var sprite_imagen = Sprite2D.new()
 	var textura = load(ruta_imagen)
-	imagen_actual.texture = textura
+	sprite_imagen.texture = textura
 	
 	# Obtener el tamaño de la ventana
 	var ventana = get_viewport_rect().size
 	
 	# Calcular la escala para mantener las proporciones
-	var tamaño_deseado = Vector2(300, 300)  # Tamaño máximo deseado (más grande)
+	var tamaño_deseado = Vector2(300, 300)  # Tamaño máximo deseado
 	var escala_x = tamaño_deseado.x / textura.get_width()
 	var escala_y = tamaño_deseado.y / textura.get_height()
 	var escala_final = min(escala_x, escala_y)  # Usar la escala más pequeña para mantener proporciones
 	
-	imagen_actual.scale = Vector2(escala_final, escala_final)
+	sprite_imagen.scale = Vector2(escala_final, escala_final)
+	sprite_imagen.centered = true
 	
-	# Colocar la imagen en y=215
-	imagen_actual.position = Vector2(ventana.x / 2, 215)
-	imagen_actual.centered = true
+	# Configurar el panel para contener la imagen correctamente
+	var tamaño_imagen = textura.get_size() * escala_final
+	panel.size = tamaño_imagen + Vector2(16, 16)  # 8px de borde en cada lado
 	
-	add_child(imagen_actual)
+	# Agregar la imagen al panel
+	panel.add_child(sprite_imagen)
+	sprite_imagen.position = panel.size / 2
+	
+	# Agregar el panel al contenedor
+	contenedor.add_child(panel)
+	panel.position = Vector2.ZERO
+	
+	# Colocar el contenedor centrado horizontalmente y arriba de los huecos
+	contenedor.position = Vector2(ventana.x / 2 - panel.size.x / 2, 90)  # Centrado y arriba de los huecos
+	
+	add_child(contenedor)
+	imagen_actual = contenedor  # Guardar referencia al contenedor
+	
 	# Asegurar que el nodo Tarjetas esté al frente
 	if has_node("Tarjetas"):
 		move_child($Tarjetas, get_child_count() - 1)
@@ -198,13 +251,6 @@ func _on_tarjeta_colocada(hueco_id: int, _tarjeta_id: int):
 	# Ya no necesitamos esta función ya que la lógica está en intentar_colocar_tarjeta
 	pass
 
-# Función para añadir nuevas palabras al diccionario
-func añadir_palabra(palabra: String, silabas: Array, imagen: String):
-	palabras[palabra] = {
-		"silabas": silabas,
-		"imagen": imagen
-	}
-
 func _on_juego_terminado():
 	print("¡Juego terminado! Reiniciando...")
 	# Esperar un momento antes de reiniciar
@@ -226,6 +272,17 @@ func _on_viewport_size_changed():
 		var escala = max(escala_x, escala_y)
 		$FondoNubes.scale = Vector2(escala, escala)
 		$FondoNubes.position = ventana / 2
+	
+	# Reposicionar la imagen actual si existe
+	if imagen_actual:
+		var ventana = get_viewport_rect().size
+		# Obtener el panel del contenedor para calcular el tamaño
+		var panel = imagen_actual.get_child(0) if imagen_actual.get_child_count() > 0 else null
+		if panel:
+			imagen_actual.position = Vector2(ventana.x / 2 - panel.size.x / 2, 150)
+		else:
+			imagen_actual.position = Vector2(ventana.x / 2, 150)
+	
 	centrar_vidas()
 
 func centrar_vidas():

@@ -6,6 +6,7 @@ var lives: int = 3
 var selected_card = null
 var pairs = []
 var matched_pairs = 0
+var max_pairs_per_game: int = 3  # Parameter to control how many pairs to show
 
 func _ready():
 	load_pairs()
@@ -15,14 +16,14 @@ func _ready():
 		$BotonVolver.pressed.connect(_on_boton_volver_pressed)
 
 func load_pairs():
-	# Load images from the animales folder
-	var dir = DirAccess.open("res://assets/animales")
+	# Load images from the images folder
+	var dir = DirAccess.open("res://assets/images")
 	if dir:
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
-			if file_name.ends_with(".png") or file_name.ends_with(".jpg"):
-				var image_path = "res://assets/animales/" + file_name
+			if file_name.ends_with(".png") or file_name.ends_with(".jpg") or file_name.ends_with(".jpeg"):
+				var image_path = "res://assets/images/" + file_name
 				var texture = load(image_path)
 				var name = file_name.get_basename().capitalize()
 				pairs.append({
@@ -35,19 +36,22 @@ func load_pairs():
 	pairs.shuffle()
 
 func create_cards():
+	# Limit to max_pairs_per_game pairs
+	var pairs_to_use = pairs.slice(0, max_pairs_per_game)
+	
 	# Create image cards
-	for i in range(pairs.size()):
+	for i in range(pairs_to_use.size()):
 		var card = CardScene.instantiate()
 		$VBoxContainer/ImageCards.add_child(card)
-		card.setup(pairs[i].texture, "", true, i, Color(1, 1, 1, 1))
+		card.setup(pairs_to_use[i].texture, "", true, i, Color(1, 1, 1, 1))
 		card.card_clicked.connect(_on_card_clicked)
 	
 	# Create text cards
 	var text_cards = []
-	for i in range(pairs.size()):
+	for i in range(pairs_to_use.size()):
 		var card = CardScene.instantiate()
 		text_cards.append(card)
-		card.setup(null, pairs[i].name, false, i)
+		card.setup(null, pairs_to_use[i].name, false, i)
 		card.card_clicked.connect(_on_card_clicked)
 	
 	# Shuffle text cards
@@ -74,7 +78,7 @@ func _on_card_clicked(card):
 			card.mark_as_matched()
 			matched_pairs += 1
 			
-			if matched_pairs == pairs.size():
+			if matched_pairs == max_pairs_per_game:
 				# Game won
 				show_game_over(true)
 		else:
