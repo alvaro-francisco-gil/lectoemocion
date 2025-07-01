@@ -26,38 +26,27 @@ func _ready():
 	area.connect("area_entered", Callable(self, "_on_area_entered"))
 	area.connect("area_exited", Callable(self, "_on_area_exited"))
 
-func _process(_delta):
-	# Buscar tarjetas cercanas
-	var gestor = get_tree().get_current_scene()
-	if gestor and gestor.nodo_tarjetas:
-		for tarjeta in gestor.nodo_tarjetas.get_children():
-			if tarjeta is TarjetaBase and tarjeta.is_dragging:
-				var distancia = global_position.distance_to(tarjeta.global_position)
-				if distancia < 50.0:  # Reducir la distancia de aceptación
-					tarjeta.current_slot = self
-
 func _on_area_entered(area_other):
 	if area_other.get_parent() is TarjetaBase:
 		var tarjeta = area_other.get_parent()
 		tarjeta.current_slot = self
+		print("Tarjeta entró en hueco: ", hueco_id)
 
 func _on_area_exited(area_other):
 	if area_other.get_parent() is TarjetaBase:
 		var tarjeta = area_other.get_parent()
 		if tarjeta.current_slot == self:
 			tarjeta.current_slot = null
+			print("Tarjeta salió del hueco: ", hueco_id)
 
-func _input_event(_viewport, event, _shape_idx):
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-			if tarjeta_actual != null:
-				liberar_tarjeta()
+
 
 func aceptar_tarjeta(tarjeta):
 	tarjeta_actual = tarjeta
 	tarjeta.current_slot = self
 	tarjeta.can_drag = false
 	tarjeta.position = position
+	print("Tarjeta aceptada en hueco: ", hueco_id)
 	emit_signal("tarjeta_colocada", hueco_id, tarjeta.silaba_id)
 
 func mostrar_error():

@@ -39,7 +39,6 @@ mouse_filter = 2
 [node name="Area2D" type="Area2D" parent="."]
 position = Vector2(0, 0)
 z_index = 1
-input_event = [ "NodePath:..", "_input_event" ]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 position = Vector2(0, 0)
