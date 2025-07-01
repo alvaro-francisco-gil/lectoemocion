@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 
 @export var silaba_id: int = 0  # Identificador único de la sílaba (por ejemplo, 0, 1, 2...)
 @export var card_text: String = ""  # Texto genérico de la tarjeta (puede ser sílaba, letra, palabra, etc.)
@@ -10,7 +10,6 @@ var is_dragging = false
 var drag_offset: Vector2
 
 func _ready():
-	start_position = position
 	actualizar_label()
 	if get_parent():
 		print("[DEBUG] Card parent type:", get_parent().get_class(), "name:", get_parent().name)
@@ -35,11 +34,11 @@ func _ready():
 
 func actualizar_label():
 	if has_node("Label"):
-		$Label.text = card_text
+		$Label.text = card_text.to_upper()
+		$Label.add_theme_color_override("font_color", Color(0,0,0))
 
 func _process(_delta):
-	if is_dragging:
-		position = get_global_mouse_position() + drag_offset
+	pass
 
 func _input_event(viewport, event, shape_idx):
 	if event is InputEventMouseButton:
@@ -51,7 +50,6 @@ func _input_event(viewport, event, shape_idx):
 				is_dragging = false
 
 func volver_a_posicion_inicial():
-	position = start_position
 	current_slot = null
 	can_drag = true
 
@@ -63,8 +61,7 @@ func _on_area_exited(area):
 	if area.get_parent() == current_slot:
 		current_slot = null
 
-func get_rect() -> Rect2:
-	var color_rect = $ColorRect
-	if color_rect:
-		return Rect2(Vector2.ZERO, color_rect.size)
+func get_card_rect() -> Rect2:
+	if has_node("Imagen"):
+		return Rect2(Vector2.ZERO, $Imagen.size)
 	return Rect2(Vector2.ZERO, Vector2(100, 60))  # Tamaño por defecto ajustado

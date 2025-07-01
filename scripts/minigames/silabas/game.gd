@@ -36,6 +36,9 @@ var imagen_actual: Sprite2D
 
 func _ready():
 	print("GestorJuego iniciado")
+	# Forzar color de fondo verde turquesa
+	if has_node("Background"):
+		$Background.color = Color(0.2, 0.95, 0.85, 1.0)
 	
 	# Asegurarse de que el nodo de vidas existe
 	if not nodo_vidas:
@@ -50,9 +53,26 @@ func _ready():
 	# Ajustar el fondo a la pantalla
 	ajustar_fondo()
 	
+	# Ajustar el fondo de nubes para que cubra toda la pantalla
+	if has_node("FondoNubes") and $FondoNubes.texture:
+		var ventana = get_viewport_rect().size
+		var tex = $FondoNubes.texture
+		var escala_x = ventana.x / tex.get_width()
+		var escala_y = ventana.y / tex.get_height()
+		var escala = max(escala_x, escala_y)
+		$FondoNubes.scale = Vector2(escala, escala)
+		$FondoNubes.position = ventana / 2
+	
 	# Inicializar el juego
 	seleccionar_palabra_aleatoria()
 	emit_signal("vidas_actualizadas", vidas)
+	
+	# Ajustar el fondo turquesa para que cubra toda la pantalla
+	if has_node("Background"):
+		$Background.position = Vector2.ZERO
+		$Background.size = get_viewport_rect().size
+	get_viewport().connect("size_changed", Callable(self, "_on_viewport_size_changed"))
+	centrar_vidas()
 
 func ajustar_fondo():
 	if nodo_fondo and nodo_fondo.texture:
@@ -91,12 +111,14 @@ func actualizar_imagen(ruta_imagen: String):
 	
 	imagen_actual.scale = Vector2(escala_final, escala_final)
 	
-	# Centrar la imagen en medio de la pantalla
-	imagen_actual.position = Vector2(ventana.x / 2, ventana.y / 2)
-	# Ajustar el origen de la imagen al centro
+	# Colocar la imagen en y=215
+	imagen_actual.position = Vector2(ventana.x / 2, 215)
 	imagen_actual.centered = true
 	
 	add_child(imagen_actual)
+	# Asegurar que el nodo Tarjetas esté al frente
+	if has_node("Tarjetas"):
+		move_child($Tarjetas, get_child_count() - 1)
 
 func crear_partida(silabas: Array):
 	print("Creando partida con sílabas: ", silabas)
@@ -105,39 +127,37 @@ func crear_partida(silabas: Array):
 		c.queue_free()
 	for c in nodo_tarjetas.get_children():
 		c.queue_free()
-	
 	tarjetas_colocadas = 0  # Reiniciar contador
 	total_tarjetas = silabas.size()  # Establecer el total de tarjetas basado en las sílabas
-	
 	# Obtener el tamaño de la ventana
 	var ventana = get_viewport_rect().size
-	
-	# Calcular posición inicial para centrar los huecos
-	var ancho_total_huecos = silabas.size() * 120  # 120 es el espacio entre huecos
-	var posicion_inicial_x = (ventana.x - ancho_total_huecos) / 2
-	
-	# Crea los huecos en orden (abajo)
+	# Calcular posición inicial para centrar los huecos y tarjetas
+	var espacio = 120
+	var ancho_total = silabas.size() * espacio
+	var posicion_inicial_x = (ventana.x - ancho_total) / 2 + espacio / 2
+	# Crea los huecos en orden (arriba)
 	for i in range(silabas.size()):
 		var hueco = escena_hueco.instantiate()
 		hueco.hueco_id = i
-		hueco.position = Vector2(posicion_inicial_x + i * 120, ventana.y - 100)  # Posición abajo
+		hueco.position = Vector2(posicion_inicial_x + i * espacio, 400)  # Más abajo
 		hueco.connect("tarjeta_colocada", Callable(self, "_on_tarjeta_colocada"))
 		nodo_huecos.add_child(hueco)
 		print("Hueco creado en posición: ", hueco.position)
-	
-	# Crea las tarjetas y las desordena (arriba)
+	# Crea las tarjetas y las desordena (abajo)
 	var silabas_desordenadas = silabas.duplicate()
 	silabas_desordenadas.shuffle()
-	
 	for i in range(silabas.size()):
 		var idx = silabas.find(silabas_desordenadas[i])
 		var tarjeta = escena_tarjeta.instantiate()
 		tarjeta.silaba_id = idx
 		tarjeta.card_text = silabas_desordenadas[i]
 		tarjeta.actualizar_label()
-		tarjeta.position = Vector2(posicion_inicial_x + i * 120, 100)  # Posición arriba
+		tarjeta.position = Vector2(posicion_inicial_x + i * espacio, 500)  # Abajo
 		nodo_tarjetas.add_child(tarjeta)
 		print("Tarjeta creada: ", silabas_desordenadas[i], " con ID: ", idx)
+	
+	# Ajustar el ancho de la tira según el número de huecos
+	ajustar_tira_silabas(silabas.size())
 
 func intentar_colocar_tarjeta(tarjeta, hueco):
 	if hueco.tarjeta_actual == null:
@@ -146,7 +166,6 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 			hueco.aceptar_tarjeta(tarjeta)
 			tarjetas_colocadas += 1
 			print("Tarjeta colocada correctamente. Total: ", tarjetas_colocadas, "/", total_tarjetas)
-			
 			# Verificar si se completó el nivel
 			if tarjetas_colocadas == total_tarjetas:
 				print("¡Nivel completado!")
@@ -155,20 +174,25 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 					seleccionar_palabra_aleatoria()
 				)
 		else:
-			# Colocación incorrecta
-			hueco.mostrar_error()
+			# Devolver la tarjeta a su posición original inmediatamente
+			tarjeta.position = tarjeta.start_position
+			tarjeta.can_drag = true
+			hueco.liberar_tarjeta()
+			# Colocación incorrecta: poner todos los huecos en rojo
+			for h in nodo_huecos.get_children():
+				if h.has_method("mostrar_error_rojo"):
+					h.mostrar_error_rojo()
 			vidas -= 1
 			print("Vidas restantes: ", vidas)
 			emit_signal("vidas_actualizadas", vidas)
-			
+			# Restaurar todos los huecos tras 0.5 segundos
+			await get_tree().create_timer(0.5).timeout
+			for h in nodo_huecos.get_children():
+				if h.has_method("restaurar_estado"):
+					h.restaurar_estado()
 			if vidas <= 0:
 				print("¡Juego terminado! Sin vidas restantes")
 				emit_signal("juego_terminado")
-			else:
-				# Devolver la tarjeta a su posición original
-				tarjeta.position = tarjeta.start_position
-				tarjeta.can_drag = true
-				hueco.liberar_tarjeta()
 
 func _on_tarjeta_colocada(hueco_id: int, _tarjeta_id: int):
 	# Ya no necesitamos esta función ya que la lógica está en intentar_colocar_tarjeta
@@ -189,3 +213,43 @@ func _on_juego_terminado():
 
 func _on_boton_volver_pressed():
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+func _on_viewport_size_changed():
+	if has_node("Background"):
+		$Background.size = get_viewport_rect().size
+	# Ajustar el fondo de nubes al cambiar el tamaño de la ventana
+	if has_node("FondoNubes") and $FondoNubes.texture:
+		var ventana = get_viewport_rect().size
+		var tex = $FondoNubes.texture
+		var escala_x = ventana.x / tex.get_width()
+		var escala_y = ventana.y / tex.get_height()
+		var escala = max(escala_x, escala_y)
+		$FondoNubes.scale = Vector2(escala, escala)
+		$FondoNubes.position = ventana / 2
+	centrar_vidas()
+
+func centrar_vidas():
+	if has_node("Vidas"):
+		var ventana = get_viewport_rect().size
+		var vidas = $Vidas
+		if vidas.has_node("HBoxContainer"):
+			var hbox = vidas.get_node("HBoxContainer")
+			vidas.position = Vector2(ventana.x / 2 - hbox.size.x / 2, 30)
+		else:
+			vidas.position = Vector2(ventana.x / 2, 30)
+
+func ajustar_tira_silabas(num_huecos: int):
+	if has_node("TiraSilabas"):
+		var tira = $TiraSilabas
+		# Si 4 huecos = 17cm (14cm + 3cm), entonces cada hueco = 4.25cm
+		# Convertir a escala: 17cm = 680px (aproximadamente)
+		var ancho_base_4_huecos = 680  # píxeles para 4 huecos (560 + 120)
+		var ancho_por_hueco = ancho_base_4_huecos / 4.0
+		var ancho_deseado = ancho_por_hueco * num_huecos
+		
+		# Calcular la escala X basándose en el ancho original de la textura
+		if tira.texture:
+			var ancho_original = tira.texture.get_width()
+			var escala_x = ancho_deseado / ancho_original
+			tira.scale.x = escala_x
+			print("Tira ajustada: ", num_huecos, " huecos, escala X: ", escala_x)

@@ -63,11 +63,29 @@ func aceptar_tarjeta(tarjeta):
 func mostrar_error():
 	var stylebox = $Panel.get("theme_override_styles/panel")
 	var original_color = stylebox.bg_color
+	# Ocultar la interrogación blanca
+	if has_node("Label"):
+		$Label.visible = false
 	stylebox.bg_color = Color(1, 0.3, 0.3, 1)
 	await get_tree().create_timer(0.5).timeout
 	stylebox.bg_color = original_color
+	# Volver a mostrar la interrogación
+	if has_node("Label"):
+		$Label.visible = true
+
+func mostrar_error_rojo():
+	var stylebox = $Panel.get("theme_override_styles/panel")
+	stylebox.bg_color = Color(1, 0.3, 0.3, 1)
+	if has_node("Label"):
+		$Label.visible = false
 
 func liberar_tarjeta():
 	if tarjeta_actual:
 		tarjeta_actual.current_slot = null
 		tarjeta_actual = null
+
+func restaurar_estado():
+	var stylebox = $Panel.get("theme_override_styles/panel")
+	stylebox.bg_color = Color(1, 1, 1, 1)
+	if has_node("Label"):
+		$Label.visible = true
