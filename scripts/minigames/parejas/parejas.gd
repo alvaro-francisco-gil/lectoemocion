@@ -11,6 +11,8 @@ func _ready():
 	load_pairs()
 	create_cards()
 	update_lives_display()
+	if has_node("BotonVolver"):
+		$BotonVolver.pressed.connect(_on_boton_volver_pressed)
 
 func load_pairs():
 	# Load images from the animales folder
@@ -37,7 +39,7 @@ func create_cards():
 	for i in range(pairs.size()):
 		var card = CardScene.instantiate()
 		$VBoxContainer/ImageCards.add_child(card)
-		card.setup(pairs[i].texture, "", true, i)
+		card.setup(pairs[i].texture, "", true, i, Color(1, 1, 1, 1))
 		card.card_clicked.connect(_on_card_clicked)
 	
 	# Create text cards
@@ -92,7 +94,7 @@ func _on_card_clicked(card):
 		selected_card = null
 
 func update_lives_display():
-	$VBoxContainer/TopBar/Lives.actualizar_vidas(lives)
+	$Lives.actualizar_vidas(lives)
 
 func show_game_over(won: bool):
 	var dialog = AcceptDialog.new()
@@ -100,4 +102,7 @@ func show_game_over(won: bool):
 	dialog.title = "Fin del juego"
 	dialog.dialog_text = "¡Has ganado!" if won else "¡Has perdido!"
 	dialog.confirmed.connect(func(): get_tree().reload_current_scene())
-	dialog.popup_centered() 
+	dialog.popup_centered()
+
+func _on_boton_volver_pressed():
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn") 

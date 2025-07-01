@@ -2,27 +2,33 @@
 
 [ext_resource type="Script" path="res://scripts/shared/lives.gd" id="1_2u4vx"]
 
-[node name="Lives" type="Node2D"]
+[node name="Lives" type="Control"]
 script = ExtResource("1_2u4vx")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 140.0
-offset_bottom = 60.0
+anchors_preset = 15
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+alignment = 1
 theme_override_constants/separation = 10
 
 [node name="Heart1" type="TextureRect" parent="HBoxContainer"]
-custom_minimum_size = Vector2(20, 20)
+custom_minimum_size = Vector2(36, 36)
 expand_mode = 1
 stretch_mode = 5
 
 [node name="Heart2" type="TextureRect" parent="HBoxContainer"]
-custom_minimum_size = Vector2(20, 20)
+custom_minimum_size = Vector2(36, 36)
 expand_mode = 1
 stretch_mode = 5
 
 [node name="Heart3" type="TextureRect" parent="HBoxContainer"]
-custom_minimum_size = Vector2(20, 20)
+custom_minimum_size = Vector2(36, 36)
 expand_mode = 1
 stretch_mode = 5 

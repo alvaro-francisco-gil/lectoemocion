@@ -10,8 +10,24 @@ var is_matched: bool = false
 func _ready():
 	pressed.connect(_on_pressed)
 	flip(false)
+	# Borde morado
+	var style = StyleBoxFlat.new()
+	style.border_width_left = 6
+	style.border_width_top = 6
+	style.border_width_right = 6
+	style.border_width_bottom = 6
+	style.border_color = Color(0.7, 0.35, 0.9, 1) # Morado un poco más oscuro
+	style.bg_color = Color(1, 1, 1, 1)
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 20
+	add_theme_stylebox_override("normal", style)
+	add_theme_stylebox_override("hover", style)
+	add_theme_stylebox_override("pressed", style)
+	add_theme_stylebox_override("focus", style)
 
-func setup(texture: Texture2D = null, text: String = "", is_img: bool = false, id: int = -1):
+func setup(texture: Texture2D = null, text: String = "", is_img: bool = false, id: int = -1, modulate_color: Color = Color(1,1,1,1)):
 	is_image = is_img
 	pair_id = id
 	
@@ -19,14 +35,15 @@ func setup(texture: Texture2D = null, text: String = "", is_img: bool = false, i
 		$TextureRect.texture = texture
 		$TextureRect.visible = true
 		$Label.visible = false
+		$TextureRect.modulate = modulate_color
 	else:
-		$Label.text = text
+		$Label.text = text.replace("-", "").to_upper()
+		$Label.modulate = Color(0,0,0,1)
 		$TextureRect.visible = false
 		$Label.visible = true
 
 func flip(show: bool):
 	is_flipped = show
-	modulate.a = 1.0 if show else 0.3
 
 func mark_as_matched():
 	is_matched = true
