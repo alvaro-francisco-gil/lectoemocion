@@ -6,7 +6,7 @@ extends Node2D
 	$HBoxContainer/Heart3
 ]
 
-var heart_texture = preload("res://assets/corazon.png")
+var heart_texture = preload("res://assets/utils/corazon.png")
 
 func _ready():
 	for heart in hearts:
