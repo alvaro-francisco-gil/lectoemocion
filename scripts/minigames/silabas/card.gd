@@ -2,6 +2,11 @@ extends "res://scripts/shared/base_card.gd"
 
 func _ready():
 	super._ready()
+	
+	# Ensure hover effects are applied to sílabas cards
+	if GameManager:
+		GameManager.add_hover_effect(self)
+		GameManager.add_click_feedback(self)
 
 func _input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:

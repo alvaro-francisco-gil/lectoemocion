@@ -24,9 +24,20 @@ func add_hover_effect(node: Control):
 	# Set pivot to center for proper scaling
 	node.pivot_offset = node.size / 2
 	
-	# Connect hover signals
-	node.mouse_entered.connect(_on_card_hover_start.bind(node))
-	node.mouse_exited.connect(_on_card_hover_end.bind(node))
+	# Connect hover signals - try multiple approaches for compatibility
+	if node.has_signal("mouse_entered"):
+		node.mouse_entered.connect(_on_card_hover_start.bind(node))
+		node.mouse_exited.connect(_on_card_hover_end.bind(node))
+	elif node.has_signal("gui_input"):
+		# For nodes that use gui_input instead of mouse_entered
+		node.gui_input.connect(_on_gui_input_hover.bind(node))
+	
+	# Also try connecting to any Area2D children
+	if node.has_node("Area2D"):
+		var area2d = node.get_node("Area2D")
+		if area2d.has_signal("mouse_entered"):
+			area2d.mouse_entered.connect(_on_card_hover_start.bind(node))
+			area2d.mouse_exited.connect(_on_card_hover_end.bind(node))
 
 # Add click feedback to any clickable element
 func add_click_feedback(node: Control):
@@ -96,4 +107,16 @@ func play_hover_sound():
 
 func play_click_sound():
 	# TODO: Add audio when sound assets are available
-	pass 
+	pass
+
+# Handle gui_input for hover detection
+func _on_gui_input_hover(event: InputEvent, node: Control):
+	if event is InputEventMouseMotion:
+		if not node.has_meta("is_hovered"):
+			node.set_meta("is_hovered", true)
+			_on_card_hover_start(node)
+	elif event is InputEventMouseButton:
+		if not event.pressed:
+			if node.has_meta("is_hovered"):
+				node.set_meta("is_hovered", false)
+				_on_card_hover_end(node) 
