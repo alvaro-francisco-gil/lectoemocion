@@ -16,24 +16,30 @@ func _ready():
 		$BotonVolver.pressed.connect(_on_boton_volver_pressed)
 
 func load_pairs():
-	# Load images from the images folder
+	# Solo obtener los nombres de archivo primero
 	var dir = DirAccess.open("res://assets/images")
+	var image_files = []
 	if dir:
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name.ends_with(".png") or file_name.ends_with(".jpg") or file_name.ends_with(".jpeg"):
-				var image_path = "res://assets/images/" + file_name
-				var texture = load(image_path)
-				var name = file_name.get_basename().capitalize()
-				pairs.append({
-					"texture": texture,
-					"name": name
-				})
+				image_files.append(file_name)
 			file_name = dir.get_next()
-	
-	# Shuffle the pairs
-	pairs.shuffle()
+
+	# Mezclar y seleccionar solo los necesarios
+	image_files.shuffle()
+	var selected_files = image_files.slice(0, max_pairs_per_game)
+
+	# Cargar solo las imágenes seleccionadas
+	for file_name in selected_files:
+		var image_path = "res://assets/images/" + file_name
+		var texture = load(image_path)
+		var name = file_name.get_basename().capitalize()
+		pairs.append({
+			"texture": texture,
+			"name": name
+		})
 
 func create_cards():
 	# Limit to max_pairs_per_game pairs
