@@ -1,0 +1,64 @@
+[gd_scene load_steps=3 format=3 uid="uid://c8q6y4n2x1m4p"]
+
+[ext_resource type="Script" path="res://scripts/minigames/cartapum/cartapum.gd" id="1_3k4m4"]
+[ext_resource type="PackedScene" uid="uid://b2j6h8g4y3n5k" path="res://scenes/shared/lives.tscn" id="2_4k5m4"]
+[ext_resource type="Texture2D" path="res://assets/fondos/fondo_para_oveja.jpg" id="3"]
+
+[node name="Cartapum" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3k4m4")
+
+[node name="FondoCartapum" type="Sprite2D" parent="Cartapum"]
+texture = ExtResource(3)
+z_index = -100
+position = Vector2(576, 324)
+scale = Vector2(0.65, 0.65)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
+
+[node name="Lives" parent="." instance=ExtResource("2_4k5m4")]
+layout_mode = 2
+anchors_preset = 10
+anchor_left = 0.25
+anchor_top = 0.0
+anchor_right = 0.75
+anchor_bottom = 0.0
+offset_left = 0.0
+offset_top = 20.0
+offset_right = 0.0
+offset_bottom = 32.0
+
+[node name="WordCard" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ImageCards" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BotonVolver" type="Button" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 120.0
+offset_bottom = 46.0
+text = "Volver" 
