@@ -36,11 +36,30 @@ func setup(texture: Texture2D = null, text: String = "", is_img: bool = false, i
 		$TextureRect.visible = true
 		$Label.visible = false
 		$TextureRect.modulate = modulate_color
+		
+		# Asegurar que la imagen se ajuste correctamente al tamaño de la tarjeta
+		$TextureRect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		$TextureRect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		# Forzar el tamaño de la tarjeta para consistencia
+		custom_minimum_size = Vector2(200, 200)
+		size = Vector2(200, 200)
+		
+		# Asegurar que el TextureRect no se salga de los límites
+		$TextureRect.custom_minimum_size = Vector2(180, 180)  # Dejar espacio para el borde
+		$TextureRect.size = Vector2(180, 180)
+		
+		# Centrar el TextureRect dentro de la tarjeta
+		$TextureRect.position = Vector2(10, 10)  # 10px de margen para el borde
 	else:
 		$Label.text = text.replace("-", "").to_upper()
 		$Label.modulate = Color(0,0,0,1)
 		$TextureRect.visible = false
 		$Label.visible = true
+		
+		# Forzar el tamaño de la tarjeta para consistencia
+		custom_minimum_size = Vector2(200, 200)
+		size = Vector2(200, 200)
 
 func flip(show: bool):
 	is_flipped = show
