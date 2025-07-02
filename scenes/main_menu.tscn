@@ -28,9 +28,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -100.0
-offset_top = -120.0
+offset_top = -140.0
 offset_right = 100.0
-offset_bottom = 120.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
@@ -52,6 +52,10 @@ text = "Cada oveja con su pareja"
 [node name="CartapumButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Cartapum"
+
+[node name="InicialesButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Iniciales"
 
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
