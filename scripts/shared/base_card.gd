@@ -25,6 +25,11 @@ func _ready():
 			var shape = $Area2D/CollisionShape2D.shape
 			if shape is RectangleShape2D:
 				shape.size = Vector2(100, 60)  # Tamaño exacto de la tarjeta
+	
+	# Add cross-minigame hover and click effects
+	if GameManager:
+		GameManager.add_hover_effect(self)
+		GameManager.add_click_feedback(self)
 
 func actualizar_label():
 	if has_node("Label"):

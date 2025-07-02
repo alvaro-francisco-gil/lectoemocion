@@ -26,6 +26,11 @@ func _ready():
 	add_theme_stylebox_override("hover", style)
 	add_theme_stylebox_override("pressed", style)
 	add_theme_stylebox_override("focus", style)
+	
+	# Add cross-minigame hover and click effects
+	if GameManager:
+		GameManager.add_hover_effect(self)
+		GameManager.add_click_feedback(self)
 
 func setup(texture: Texture2D = null, text: String = "", is_img: bool = false, id: int = -1, modulate_color: Color = Color(1,1,1,1)):
 	is_image = is_img
