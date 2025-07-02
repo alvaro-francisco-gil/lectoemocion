@@ -196,9 +196,16 @@ func crear_partida(silabas: Array):
 		hueco.connect("tarjeta_colocada", Callable(self, "_on_tarjeta_colocada"))
 		nodo_huecos.add_child(hueco)
 		print("Hueco creado en posición: ", hueco.position)
-	# Crea las tarjetas y las desordena (abajo)
+	# Crea las tarjetas y las desordena (abajo), asegurando que ninguna quede en su sitio
 	var silabas_desordenadas = silabas.duplicate()
-	silabas_desordenadas.shuffle()
+	var valido = false
+	while not valido:
+		silabas_desordenadas.shuffle()
+		valido = true
+		for i in range(silabas.size()):
+			if silabas_desordenadas[i] == silabas[i]:
+				valido = false
+				break
 	for i in range(silabas.size()):
 		var idx = silabas.find(silabas_desordenadas[i])
 		var tarjeta = escena_tarjeta.instantiate()
@@ -208,7 +215,6 @@ func crear_partida(silabas: Array):
 		tarjeta.position = Vector2(posicion_inicial_x + i * espacio, 500)  # Abajo
 		nodo_tarjetas.add_child(tarjeta)
 		print("Tarjeta creada: ", silabas_desordenadas[i], " con ID: ", idx)
-	
 	# Ajustar el ancho de la tira según el número de huecos
 	ajustar_tira_silabas(silabas.size())
 
@@ -298,15 +304,14 @@ func centrar_vidas():
 func ajustar_tira_silabas(num_huecos: int):
 	if has_node("TiraSilabas"):
 		var tira = $TiraSilabas
-		# Si 4 huecos = 17cm (14cm + 3cm), entonces cada hueco = 4.25cm
-		# Convertir a escala: 17cm = 680px (aproximadamente)
-		var ancho_base_4_huecos = 680  # píxeles para 4 huecos (560 + 120)
-		var ancho_por_hueco = ancho_base_4_huecos / 4.0
-		var ancho_deseado = ancho_por_hueco * num_huecos
-		
-		# Calcular la escala X basándose en el ancho original de la textura
-		if tira.texture:
+		# Nuevos anchos: 2 sílabas = 360px, 3 sílabas = 540px, 4 sílabas = 720px
+		var ancho_deseado := 360.0 if num_huecos == 2 else 540.0 if num_huecos == 3 else 720.0
+		if num_huecos > 4:
+			ancho_deseado = 720.0 * num_huecos / 4.0
+		if tira.texture != null:
 			var ancho_original = tira.texture.get_width()
 			var escala_x = ancho_deseado / ancho_original
 			tira.scale.x = escala_x
 			print("Tira ajustada: ", num_huecos, " huecos, escala X: ", escala_x)
+		else:
+			print("[ADVERTENCIA] La textura de la tira de sílabas no está asignada.")
