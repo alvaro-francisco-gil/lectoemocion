@@ -27,7 +27,7 @@ scale = Vector2(1, 1)
 texture = ExtResource(6)
 z_index = -100
 position = Vector2(576, 469)
-scale = Vector2(0.25, 0.25)
+scale = Vector2(0.29, 0.31875)
 
 [node name="Huecos" type="Node2D" parent="."]
 position = Vector2(0, 66)
