@@ -60,6 +60,30 @@ text = "Iniciar Sesión"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 20
 
+[node name="GoogleSignInButton" type="Button" parent="VBoxContainer/LoginView"]
+layout_mode = 2
+text = "🔑 Continuar con Google"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color_hover = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_color_pressed = Color(0.8, 0.8, 0.8, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_1")
+
+[node name="OrSeparator" type="HBoxContainer" parent="VBoxContainer/LoginView"]
+layout_mode = 2
+
+[node name="Line1" type="HSeparator" parent="VBoxContainer/LoginView/OrSeparator"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OrLabel" type="Label" parent="VBoxContainer/LoginView/OrSeparator"]
+layout_mode = 2
+text = " o "
+horizontal_alignment = 1
+
+[node name="Line2" type="HSeparator" parent="VBoxContainer/LoginView/OrSeparator"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="LoginForm" type="VBoxContainer" parent="VBoxContainer/LoginView"]
 layout_mode = 2
 theme_override_constants/separation = 10

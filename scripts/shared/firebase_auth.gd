@@ -1,7 +1,7 @@
 extends Node
 
 # Firebase Auth Manager
-# Handles user authentication and profile management
+# Handles user authentication and profile management using Firebase REST API
 
 signal user_logged_in(user_data)
 signal user_logged_out
@@ -9,70 +9,133 @@ signal auth_error(error_message)
 
 var current_user = null
 var is_logged_in = false
+var http_request: HTTPRequest
 
-# Mock Firebase functionality for now (will be replaced with real Firebase)
-var mock_users = {
-	"test@example.com": {
-		"password": "123456",
-		"display_name": "Usuario Test",
-		"uid": "test_user_123"
-	}
-}
+# Firebase REST API endpoints
+const AUTH_REGISTER_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signUp"
+const AUTH_LOGIN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
+const AUTH_REFRESH_URL = "https://identitytoolkit.googleapis.com/v1/token"
 
 func _ready():
 	print("Firebase Auth Manager initialized")
-	# Check if user was previously logged in (from saved data)
+	
+	# Create HTTP request node
+	http_request = HTTPRequest.new()
+	add_child(http_request)
+	http_request.request_completed.connect(_on_http_request_completed)
+	
+	# Check if user was previously logged in
 	load_user_session()
 
 func login_with_email(email: String, password: String):
 	"""
-	Attempt to log in with email and password
+	Attempt to log in with email and password using Firebase Auth REST API
 	"""
-	print("Attempting login with email: ", email)
+	print("Attempting Firebase login with email: ", email)
 	
-	# Mock authentication (replace with real Firebase later)
-	if email in mock_users and mock_users[email]["password"] == password:
-		var user_data = {
-			"uid": mock_users[email]["uid"],
-			"email": email,
-			"display_name": mock_users[email]["display_name"]
-		}
-		
-		current_user = user_data
-		is_logged_in = true
-		save_user_session()
-		
-		emit_signal("user_logged_in", user_data)
-		print("Login successful for: ", email)
-	else:
-		emit_signal("auth_error", "Email o contraseña incorrectos")
-		print("Login failed for: ", email)
+	var url = AUTH_LOGIN_URL + "?key=" + FirebaseConfig.get_api_key()
+	var headers = ["Content-Type: application/json"]
+	var body = JSON.stringify({
+		"email": email,
+		"password": password,
+		"returnSecureToken": true
+	})
+	
+	var err = http_request.request(url, headers, HTTPClient.METHOD_POST, body)
+	if err != OK:
+		emit_signal("auth_error", "Error al conectar con Firebase")
 
 func register_with_email(email: String, password: String, display_name: String = ""):
 	"""
-	Register a new user with email and password
+	Register a new user with email and password using Firebase Auth REST API
 	"""
-	print("Attempting registration with email: ", email)
-	
-	# Mock registration (replace with real Firebase later)
-	if email in mock_users:
-		emit_signal("auth_error", "Este email ya está registrado")
-		return
+	print("Attempting Firebase registration with email: ", email)
 	
 	if password.length() < 6:
 		emit_signal("auth_error", "La contraseña debe tener al menos 6 caracteres")
 		return
 	
-	# Create new user
-	var uid = "user_" + str(randi())
-	mock_users[email] = {
+	var url = AUTH_REGISTER_URL + "?key=" + FirebaseConfig.get_api_key()
+	var headers = ["Content-Type: application/json"]
+	var body = JSON.stringify({
+		"email": email,
 		"password": password,
-		"display_name": display_name if display_name != "" else email.split("@")[0],
-		"uid": uid
+		"returnSecureToken": true
+	})
+	
+	var err = http_request.request(url, headers, HTTPClient.METHOD_POST, body)
+	if err != OK:
+		emit_signal("auth_error", "Error al conectar con Firebase")
+
+func _on_http_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	"""
+	Handle HTTP responses from Firebase
+	"""
+	print("Firebase response: ", response_code)
+	
+	if response_code == 200:
+		# Parse successful response
+		var json = JSON.new()
+		var parse_result = json.parse(body.get_string_from_utf8())
+		
+		if parse_result == OK:
+			var response_data = json.data
+			_handle_successful_auth(response_data)
+		else:
+			emit_signal("auth_error", "Error al procesar respuesta de Firebase")
+	else:
+		# Handle error response
+		var json = JSON.new()
+		var parse_result = json.parse(body.get_string_from_utf8())
+		
+		if parse_result == OK and "error" in json.data:
+			var error_message = _get_friendly_error_message(json.data.error.message)
+			emit_signal("auth_error", error_message)
+		else:
+			emit_signal("auth_error", "Error de autenticación")
+
+func _handle_successful_auth(response_data: Dictionary):
+	"""
+	Handle successful authentication response from Firebase
+	"""
+	var user_data = {
+		"uid": response_data.get("localId", ""),
+		"email": response_data.get("email", ""),
+		"display_name": response_data.get("displayName", response_data.get("email", "").split("@")[0]),
+		"id_token": response_data.get("idToken", ""),
+		"refresh_token": response_data.get("refreshToken", "")
 	}
 	
-	# Auto-login after registration
-	login_with_email(email, password)
+	current_user = user_data
+	is_logged_in = true
+	save_user_session()
+	
+	emit_signal("user_logged_in", user_data)
+	print("Firebase login successful for: ", user_data.email)
+
+func _get_friendly_error_message(error_message: String) -> String:
+	"""
+	Convert Firebase error messages to user-friendly Spanish messages
+	"""
+	match error_message:
+		"EMAIL_EXISTS":
+			return "Este email ya está registrado"
+		"OPERATION_NOT_ALLOWED":
+			return "Operación no permitida"
+		"TOO_MANY_ATTEMPTS_TRY_LATER":
+			return "Demasiados intentos. Intenta más tarde"
+		"EMAIL_NOT_FOUND":
+			return "Email no encontrado"
+		"INVALID_PASSWORD":
+			return "Contraseña incorrecta"
+		"USER_DISABLED":
+			return "Usuario deshabilitado"
+		"INVALID_EMAIL":
+			return "Email inválido"
+		"WEAK_PASSWORD":
+			return "Contraseña muy débil"
+		_:
+			return "Error de autenticación: " + error_message
 
 func logout():
 	"""
@@ -132,21 +195,44 @@ func clear_user_session():
 		file.store_string("")
 		file.close()
 
-# Future functions for real Firebase integration:
+# Future functions for Firebase plugin integration:
 func login_with_google():
 	"""
-	Log in with Google (to be implemented with Firebase)
+	Log in with Google (requires Firebase plugin)
 	"""
-	pass
+	emit_signal("auth_error", "Login con Google requiere el plugin de Firebase")
 
 func reset_password(email: String):
 	"""
-	Send password reset email (to be implemented with Firebase)
+	Send password reset email using Firebase REST API
 	"""
-	pass
+	var url = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=" + FirebaseConfig.get_api_key()
+	var headers = ["Content-Type: application/json"]
+	var body = JSON.stringify({
+		"requestType": "PASSWORD_RESET",
+		"email": email
+	})
+	
+	var err = http_request.request(url, headers, HTTPClient.METHOD_POST, body)
+	if err != OK:
+		emit_signal("auth_error", "Error al enviar email de recuperación")
 
 func update_profile(display_name: String):
 	"""
-	Update user profile (to be implemented with Firebase)
+	Update user profile (requires authentication token)
 	"""
-	pass 
+	if not current_user or not current_user.has("id_token"):
+		emit_signal("auth_error", "Debes estar autenticado para actualizar perfil")
+		return
+	
+	var url = "https://identitytoolkit.googleapis.com/v1/accounts:update?key=" + FirebaseConfig.get_api_key()
+	var headers = ["Content-Type: application/json"]
+	var body = JSON.stringify({
+		"idToken": current_user.id_token,
+		"displayName": display_name,
+		"returnSecureToken": true
+	})
+	
+	var err = http_request.request(url, headers, HTTPClient.METHOD_POST, body)
+	if err != OK:
+		emit_signal("auth_error", "Error al actualizar perfil") 

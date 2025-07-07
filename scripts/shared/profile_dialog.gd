@@ -14,6 +14,7 @@ extends AcceptDialog
 @onready var logout_button = $VBoxContainer/ProfileView/LogoutButton
 
 # Login form nodes
+@onready var google_signin_button = $VBoxContainer/LoginView/GoogleSignInButton
 @onready var email_input = $VBoxContainer/LoginView/LoginForm/EmailInput
 @onready var password_input = $VBoxContainer/LoginView/LoginForm/PasswordInput
 @onready var login_button = $VBoxContainer/LoginView/LoginForm/LoginButton
@@ -36,6 +37,7 @@ func _ready():
 	firebase_auth.auth_error.connect(_on_auth_error)
 	
 	# Connect button signals
+	google_signin_button.pressed.connect(_on_google_signin_button_pressed)
 	login_button.pressed.connect(_on_login_button_pressed)
 	register_button.pressed.connect(_on_register_button_pressed)
 	logout_button.pressed.connect(_on_logout_button_pressed)
@@ -51,6 +53,18 @@ func _ready():
 	
 	# Update UI based on current auth state
 	update_ui()
+
+func _on_google_signin_button_pressed():
+	"""Handle Google Sign-in button press"""
+	# For now, show that Google Sign-in requires additional setup
+	show_error("Google Sign-in requiere configuración adicional. Usa email/contraseña por ahora.")
+	
+	# TODO: Implement Google OAuth flow
+	# This would require:
+	# 1. Opening a web browser with Google OAuth URL
+	# 2. Handling the redirect callback
+	# 3. Exchanging the authorization code for tokens
+	# 4. Using the ID token with Firebase
 
 func _on_login_submit(text: String = ""):
 	"""Handle Enter key press in login form"""
