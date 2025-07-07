@@ -1,5 +1,15 @@
 # Godot 4+ specific ignores
 .godot/
-/android/
 *.uid
 *.import
+
+# Android specific ignores
+android/*.apk
+android/*.aab
+android/*.keystore
+android/*.jks
+android/google-services.json
+android/output/
+
+# Export presets (auto-generated)
+export_presets.cfg

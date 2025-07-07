@@ -1,0 +1,34 @@
+# Android build files
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Firebase configuration files
+# Note: google-services.json should be committed for CI/CD
+# but never commit it with production keys
+google-services.json
+
+# Debug keystore (can be committed for team sharing)
+debug.keystore
+
+# Build directories
+build/
+output/
+
+# Gradle files (if using custom gradle)
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# Local properties
+local.properties
+
+# Android Studio files
+.idea/
+*.iml
+
+# Temporary files
+*.tmp
+*.temp 

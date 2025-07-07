@@ -22,4 +22,4 @@ FirebaseAuth="*res://scripts/shared/firebase_auth.gd"
 
 [rendering]
 
-renderer/rendering_method="mobile"
+renderer/rendering_method="gl_compatibility"

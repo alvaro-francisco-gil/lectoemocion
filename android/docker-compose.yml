@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  android-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lectoemocion-android-build
+    volumes:
+      - ..:/project:ro
+      - ./output:/output
+    environment:
+      - PACKAGE_NAME=com.lectoemocion.game
+      - APK_NAME=lectoemocion
+    working_dir: /project
+    command: /opt/export_android.sh
+
+  # Alternative service for interactive development
+  android-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lectoemocion-android-dev
+    volumes:
+      - ..:/project
+      - ./output:/output
+    environment:
+      - PACKAGE_NAME=com.lectoemocion.game
+      - APK_NAME=lectoemocion
+    working_dir: /project
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+
+  # Service for getting SHA-1 fingerprint only
+  android-fingerprint:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lectoemocion-fingerprint
+    command: >
+      sh -c "echo '🔑 Debug keystore SHA-1 fingerprint:' &&
+             keytool -list -v -keystore /opt/keystores/debug.keystore 
+             -alias androiddebugkey -storepass android -keypass android 2>/dev/null | grep SHA1 | head -1" 
