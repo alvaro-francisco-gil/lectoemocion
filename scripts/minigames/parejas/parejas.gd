@@ -1,14 +1,22 @@
 extends Control
 
 const CardScene = preload("res://scenes/minigames/parejas/card.tscn")
+const AnimationsScene = preload("res://scenes/shared/animations.tscn")
 
 var lives: int = 3
 var selected_card = null
 var pairs = []
 var matched_pairs = 0
 var max_pairs_per_game: int = 3  # Parameter to control how many pairs to show
+var animations: Node
+var total_attempts = 0
+var correct_attempts = 0
 
 func _ready():
+	# Add animations system
+	animations = AnimationsScene.instantiate()
+	add_child(animations)
+	
 	load_pairs()
 	create_cards()
 	update_lives_display()
@@ -83,14 +91,20 @@ func _on_card_clicked(card):
 			selected_card.mark_as_matched()
 			card.mark_as_matched()
 			matched_pairs += 1
+			correct_attempts += 1
+			total_attempts += 1
+			
+			# Show small completion animation
+			animations.show_pair_matched()
 			
 			if matched_pairs == max_pairs_per_game:
 				# Game won
-				show_game_over(true)
+				show_game_completion()
 		else:
 			# Wrong match
 			lives -= 1
 			update_lives_display()
+			total_attempts += 1
 			
 			if lives <= 0:
 				show_game_over(false)
@@ -106,11 +120,21 @@ func _on_card_clicked(card):
 func update_lives_display():
 	$Lives.actualizar_vidas(lives)
 
+func show_game_completion():
+	# Calculate stars based on performance
+	var stars_earned = 3
+	if lives < 3:
+		stars_earned = max(1, 3 - (3 - lives))
+	
+	# Show game completion animation
+	animations.show_game_completion(100, stars_earned, total_attempts, correct_attempts)
+	animations.game_completion_finished.connect(func(): get_tree().reload_current_scene())
+
 func show_game_over(won: bool):
 	var dialog = AcceptDialog.new()
 	add_child(dialog)
 	dialog.title = "Fin del juego"
-	dialog.dialog_text = "¡Has ganado!" if won else "¡Has perdido!"
+	dialog.dialog_text = "¡Has perdido!"
 	dialog.confirmed.connect(func(): get_tree().reload_current_scene())
 	dialog.popup_centered()
 

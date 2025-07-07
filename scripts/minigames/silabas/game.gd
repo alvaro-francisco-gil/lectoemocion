@@ -6,6 +6,8 @@ signal juego_terminado
 @export var escena_tarjeta : PackedScene
 @export var escena_hueco : PackedScene
 
+const AnimationsScene = preload("res://scenes/shared/animations.tscn")
+
 @onready var nodo_huecos = $Huecos
 @onready var nodo_tarjetas = $Tarjetas
 @onready var nodo_vidas = $Vidas
@@ -19,12 +21,19 @@ var tarjetas_colocadas = 0
 var total_tarjetas = 0
 var vidas = 3
 var imagen_actual: Control
+var animations: Node
+var total_attempts = 0
+var correct_attempts = 0
 
 func _ready():
 	print("GestorJuego iniciado")
 	# Forzar color de fondo verde turquesa
 	if has_node("Background"):
 		$Background.color = Color(0.2, 0.95, 0.85, 1.0)
+	
+	# Add animations system
+	animations = AnimationsScene.instantiate()
+	add_child(animations)
 	
 	# Asegurarse de que el nodo de vidas existe
 	if not nodo_vidas:
@@ -224,10 +233,16 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 			# Colocación correcta
 			hueco.aceptar_tarjeta(tarjeta)
 			tarjetas_colocadas += 1
+			correct_attempts += 1
+			total_attempts += 1
 			print("Tarjeta colocada correctamente. Total: ", tarjetas_colocadas, "/", total_tarjetas)
+			# Show small completion animation
+			animations.show_syllable_correct()
 			# Verificar si se completó el nivel
 			if tarjetas_colocadas == total_tarjetas:
 				print("¡Nivel completado!")
+				# Show level completion animation
+				animations.show_level_completed()
 				# Esperar un momento antes de cambiar de palabra
 				get_tree().create_timer(1.0).timeout.connect(func():
 					seleccionar_palabra_aleatoria()
@@ -242,6 +257,7 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 				if h.has_method("mostrar_error_rojo"):
 					h.mostrar_error_rojo()
 			vidas -= 1
+			total_attempts += 1
 			print("Vidas restantes: ", vidas)
 			emit_signal("vidas_actualizadas", vidas)
 			# Restaurar todos los huecos tras 0.5 segundos
