@@ -17,11 +17,8 @@ const CONFIG = {
 }
 
 # Google OAuth configuration
-# To get your Google Client ID:
-# 1. Go to Firebase Console > Authentication > Sign-in method
-# 2. Click on Google provider
-# 3. Copy the "Web client ID" (not the Web client secret)
-const GOOGLE_CLIENT_ID = "718149941592-YOUR_CLIENT_ID.apps.googleusercontent.com"
+# Client ID from Google Cloud Console > APIs & Services > Credentials
+const GOOGLE_CLIENT_ID = "718149941592-t6c2inq4k3o61upls5703no2ame7n69b.apps.googleusercontent.com"
 
 # For future Firebase plugin integration
 static func get_config() -> Dictionary:
