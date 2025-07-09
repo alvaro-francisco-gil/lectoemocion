@@ -24,6 +24,8 @@ var imagen_actual: Control
 var animations: Node
 var total_attempts = 0
 var correct_attempts = 0
+var acierto_sound: AudioStreamPlayer
+var error_sound: AudioStreamPlayer
 
 func _ready():
 	print("GestorJuego iniciado")
@@ -34,6 +36,26 @@ func _ready():
 	# Add animations system
 	animations = AnimationsScene.instantiate()
 	add_child(animations)
+	
+	# Load success sound
+	var sound_stream = load("res://assets/sounds/sonido acierto.mp3")
+	if sound_stream:
+		print("Sonido de acierto cargado correctamente")
+		acierto_sound = AudioStreamPlayer.new()
+		acierto_sound.stream = sound_stream
+		add_child(acierto_sound)
+	else:
+		print("ERROR: No se pudo cargar el sonido de acierto")
+	
+	# Load error sound
+	var error_stream = load("res://assets/sounds/sonido error.mp3")
+	if error_stream:
+		print("Sonido de error cargado correctamente")
+		error_sound = AudioStreamPlayer.new()
+		error_sound.stream = error_stream
+		add_child(error_sound)
+	else:
+		print("ERROR: No se pudo cargar el sonido de error")
 	
 	# Asegurarse de que el nodo de vidas existe
 	if not nodo_vidas:
@@ -236,22 +258,38 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 			correct_attempts += 1
 			total_attempts += 1
 			print("Tarjeta colocada correctamente. Total: ", tarjetas_colocadas, "/", total_tarjetas)
+			
+			# Play success sound
+			if acierto_sound:
+				print("Reproduciendo sonido de acierto")
+				acierto_sound.play()
+			else:
+				print("ERROR: acierto_sound es null")
+			
 			# Show small completion animation
 			animations.show_syllable_correct()
 			# Verificar si se completó el nivel
 			if tarjetas_colocadas == total_tarjetas:
 				print("¡Nivel completado!")
-				# Show level completion animation
-				animations.show_level_completed()
-				# Esperar un momento antes de cambiar de palabra
-				get_tree().create_timer(1.0).timeout.connect(func():
-					seleccionar_palabra_aleatoria()
-				)
+				# Show full game completion animation with stars
+				animations.show_game_completion(100, 3, total_attempts, correct_attempts)
+				# Wait for the animation to finish before continuing
+				await animations.game_completion_finished
+				# Then change to a new word
+				seleccionar_palabra_aleatoria()
 		else:
 			# Devolver la tarjeta a su posición original inmediatamente
 			tarjeta.position = tarjeta.start_position
 			tarjeta.can_drag = true
 			hueco.liberar_tarjeta()
+			
+			# Play error sound
+			if error_sound:
+				print("Reproduciendo sonido de error")
+				error_sound.play()
+			else:
+				print("ERROR: error_sound es null")
+			
 			# Colocación incorrecta: poner todos los huecos en rojo
 			for h in nodo_huecos.get_children():
 				if h.has_method("mostrar_error_rojo"):

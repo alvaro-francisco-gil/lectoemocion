@@ -7,7 +7,7 @@ signal game_completion_finished
 @onready var game_completion = $GameCompletion
 
 # Preload star texture
-var star_texture = preload("res://assets/images/es-tre-lla.jpg")
+var star_texture = preload("res://assets/utils/star.png")
 
 func _ready():
 	# Hide both animations initially
@@ -65,6 +65,7 @@ func show_game_completion(score_percentage: int = 100, stars_earned: int = 3, to
 	var title = content.get_node("Title")
 	var score_label = content.get_node("Score")
 	var stars_container = content.get_node("Stars")
+	var continue_button = content.get_node("ContinueButton")
 	
 	# Calculate performance metrics
 	var accuracy = 0
@@ -73,7 +74,52 @@ func show_game_completion(score_percentage: int = 100, stars_earned: int = 3, to
 	
 	# Set title and score
 	title.text = "¡Juego Completado!"
-	score_label.text = "Precisión: %d%%" % accuracy
+	score_label.text = ""  # Remove precision text
+	
+	# Apply purple border to continue button
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(1, 1, 1, 1)
+	style_normal.border_width_left = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_bottom = 3
+	style_normal.border_color = Color(0.5, 0.2, 0.8, 1)  # Purple border
+	style_normal.corner_radius_top_left = 8
+	style_normal.corner_radius_top_right = 8
+	style_normal.corner_radius_bottom_right = 8
+	style_normal.corner_radius_bottom_left = 8
+	continue_button.add_theme_stylebox_override("normal", style_normal)
+	
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.95, 0.95, 1, 1)
+	style_hover.border_width_left = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_bottom = 3
+	style_hover.border_color = Color(0.6, 0.3, 0.9, 1)  # Lighter purple for hover
+	style_hover.corner_radius_top_left = 8
+	style_hover.corner_radius_top_right = 8
+	style_hover.corner_radius_bottom_right = 8
+	style_hover.corner_radius_bottom_left = 8
+	continue_button.add_theme_stylebox_override("hover", style_hover)
+	
+	var style_pressed = StyleBoxFlat.new()
+	style_pressed.bg_color = Color(0.9, 0.9, 0.95, 1)
+	style_pressed.border_width_left = 3
+	style_pressed.border_width_top = 3
+	style_pressed.border_width_right = 3
+	style_pressed.border_width_bottom = 3
+	style_pressed.border_color = Color(0.4, 0.1, 0.7, 1)  # Darker purple for pressed
+	style_pressed.corner_radius_top_left = 8
+	style_pressed.corner_radius_top_right = 8
+	style_pressed.corner_radius_bottom_right = 8
+	style_pressed.corner_radius_bottom_left = 8
+	continue_button.add_theme_stylebox_override("pressed", style_pressed)
+	
+	# Set text color to black
+	continue_button.add_theme_color_override("font_color", Color(0, 0, 0, 1))  # Black text
+	continue_button.add_theme_color_override("font_hover_color", Color(0, 0, 0, 1))  # Black text on hover
+	continue_button.add_theme_color_override("font_pressed_color", Color(0, 0, 0, 1))  # Black text when pressed
 	
 	# Set stars based on performance
 	var star_nodes = [stars_container.get_node("Star1"), 

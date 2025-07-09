@@ -32,7 +32,7 @@ offset_right = 400.0
 offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
+theme_override_constants/separation = 50
 
 [node name="Lives" parent="." instance=ExtResource("2_4k5m4")]
 layout_mode = 2
@@ -50,11 +50,15 @@ offset_bottom = 32.0
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
+offset_top = 400
 
 [node name="ImageCards" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
+theme_override_constants/separation = 20
+layout_mode = 2
+offset_top = 450
 
 [node name="BotonVolver" type="Button" parent="."]
 offset_left = 20.0

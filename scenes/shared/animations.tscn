@@ -1,6 +1,42 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqxvh8yqxqxqx"]
+[gd_scene load_steps=5 format=3 uid="uid://bqxvh8yqxqxqx"]
 
 [ext_resource type="Script" path="res://scripts/shared/animations.gd" id="1_0xqxq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.2, 0.8, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+bg_color = Color(0.95, 0.95, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.3, 0.9, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+bg_color = Color(0.9, 0.9, 0.95, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.4, 0.1, 0.7, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="Animations" type="CanvasLayer"]
 script = ExtResource("1_0xqxq")
@@ -69,7 +105,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0.8)
+color = Color(0, 0, 0, 0.0)
 
 [node name="Content" type="VBoxContainer" parent="GameCompletion"]
 layout_mode = 1
@@ -116,4 +152,7 @@ texture_filter = 1
 
 [node name="ContinueButton" type="Button" parent="GameCompletion/Content"]
 layout_mode = 2
-text = "Continuar" 
+text = "Continuar"
+add_theme_stylebox_override("normal", SubResource("StyleBoxFlat_1"))
+add_theme_stylebox_override("hover", SubResource("StyleBoxFlat_2"))
+add_theme_stylebox_override("pressed", SubResource("StyleBoxFlat_3")) 

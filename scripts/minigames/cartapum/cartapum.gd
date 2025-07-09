@@ -1,6 +1,9 @@
 extends Control
 
 const CardScene = preload("res://scenes/minigames/parejas/card.tscn")
+const AnimationsScene = preload("res://scenes/shared/animations.tscn")
+
+var animations: Node
 
 var lives: int = 3
 var current_word = ""
@@ -10,6 +13,10 @@ var word_data = {}  # Dictionary to store word data
 var max_images_per_game: int = 3  # Parameter to control how many images to show
 
 func _ready():
+	# Add animations system
+	animations = AnimationsScene.instantiate()
+	add_child(animations)
+	
 	load_words_and_images()
 	create_new_round()
 	update_lives_display()
@@ -59,9 +66,19 @@ func create_new_round():
 	word_card.setup(null, current_word, false, -1)
 	word_card.disabled = true  # Make it non-clickable
 	
+	# Force the word card to be much lower by changing its position
+	$VBoxContainer/WordCard.position.y = 350
+	$VBoxContainer/WordCard.position.x = 0
+	print("DEBUG: Moving word card to position Y = 350")
+	
 	# Create image cards at the bottom
 	var available_words = word_data.keys()
 	available_words.erase(current_word)  # Remove the correct word
+	
+	# Keep the ImageCards in their current position
+	$VBoxContainer/ImageCards.position.y = 400
+	$VBoxContainer/ImageCards.position.x = 0
+	print("DEBUG: Keeping images at position Y = 400")
 	
 	# Add the correct image
 	var correct_card = CardScene.instantiate()
@@ -110,10 +127,13 @@ func shuffle_image_cards():
 func _on_correct_card_clicked(card):
 	# Correct answer!
 	card.mark_as_matched()
-	show_success_message()
 	
-	# Wait a moment then create new round
-	await get_tree().create_timer(1.5).timeout
+	# Show full game completion animation with stars
+	animations.show_game_completion(100, 3, 1, 1)
+	# Wait for the animation to finish before continuing
+	await animations.game_completion_finished
+	
+	# Then create new round
 	create_new_round()
 
 func _on_wrong_card_clicked(card):
@@ -132,12 +152,7 @@ func _on_wrong_card_clicked(card):
 func update_lives_display():
 	$Lives.actualizar_vidas(lives)
 
-func show_success_message():
-	var dialog = AcceptDialog.new()
-	add_child(dialog)
-	dialog.title = "¡Correcto!"
-	dialog.dialog_text = "¡Muy bien! Has encontrado la imagen correcta."
-	dialog.popup_centered()
+
 
 func show_game_over(won: bool):
 	var dialog = AcceptDialog.new()

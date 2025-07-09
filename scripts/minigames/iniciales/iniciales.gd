@@ -130,17 +130,25 @@ func create_big_card():
 	place_images_in_big_card(big_card)
 
 func place_images_in_big_card(big_card: Panel):
-	# Calculate grid layout
+	# Calculate grid layout for better centering
 	var cols = 5  # 5 columns
 	var rows = ceil(float(remaining_images.size()) / cols)
-	var card_size = Vector2(80, 80)  # Smaller cards for the big card
-	var spacing = 20
+	var card_size = Vector2(120, 120)  # Bigger cards (80 + 40 = 120, approximately 2cm larger)
+	var spacing = 15  # Reduced spacing for better fit
 	
-	# Calculate starting position to center the grid
+	# Calculate starting position to perfectly center the grid within the big card
 	var total_width = cols * card_size.x + (cols - 1) * spacing
 	var total_height = rows * card_size.y + (rows - 1) * spacing
 	var start_x = (big_card.size.x - total_width) / 2
 	var start_y = (big_card.size.y - total_height) / 2
+	
+	# Move the entire grid: 3cm up and 4.5cm left (approximately 114px up and 170px left)
+	start_x -= 170  # Move 4.5cm left (150 + 20)
+	start_y -= 114  # Move 3cm up (190 - 76)
+	
+	# Ensure we don't go outside the big card boundaries
+	start_x = max(20, start_x)  # At least 20px from left edge
+	start_y = max(20, start_y)  # At least 20px from top edge
 	
 	card_references.clear()  # Clear previous references
 	
@@ -152,13 +160,18 @@ func place_images_in_big_card(big_card: Panel):
 		card.setup(remaining_images[i].texture, "", true, i, Color(1, 1, 1, 1))
 		card.card_clicked.connect(_on_card_clicked.bind(i))
 		
-		# Position the card
+		# Position the card within the big card boundaries
 		var pos_x = start_x + col * (card_size.x + spacing)
 		var pos_y = start_y + row * (card_size.y + spacing)
+		
+		# Ensure card doesn't go outside the big card
+		pos_x = clamp(pos_x, 20, big_card.size.x - card_size.x - 20)
+		pos_y = clamp(pos_y, 20, big_card.size.y - card_size.y - 20)
+		
 		card.position = Vector2(pos_x, pos_y)
 		
-		# Random rotation
-		card.rotation = randf_range(-0.3, 0.3)  # Random rotation between -17 and +17 degrees
+		# Random rotation (reduced for better fit)
+		card.rotation = randf_range(-0.2, 0.2)  # Random rotation between -11 and +11 degrees
 		
 		# Scale down the card
 		card.scale = Vector2(0.4, 0.4)  # 40% of original size
