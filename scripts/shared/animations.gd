@@ -7,7 +7,7 @@ signal game_completion_finished
 @onready var game_completion = $GameCompletion
 
 # Preload star texture
-var star_texture = preload("res://assets/IMÁGENES SUELTAS/estrella3-.jpg")
+var star_texture = preload("res://assets/images/es-tre-lla.jpg")
 
 func _ready():
 	# Hide both animations initially
