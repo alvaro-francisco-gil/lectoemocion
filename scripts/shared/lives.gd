@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 
 @onready var hearts = [
 	$HBoxContainer/Heart1,

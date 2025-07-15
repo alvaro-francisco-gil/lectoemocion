@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b6x8v0j6y5n3q"]
 
-[ext_resource type="Script" uid="uid://b60gph33yed21" path="res://scripts/main_menu.gd" id="1_2u4vx"]
+[ext_resource type="Script" uid="uid://t67ewaq8e2vg" path="res://scripts/main_menu.gd" id="1_2u4vx"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -20,6 +20,19 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.2, 0.4, 0.8, 1)
 
+[node name="ProfileButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -120.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 60.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 16
+text = "👤 Perfil"
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -28,9 +41,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -100.0
-offset_top = -100.0
+offset_top = -140.0
 offset_right = 100.0
-offset_bottom = 100.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
@@ -48,6 +61,14 @@ text = "Juego de Sílabas"
 [node name="ParejasButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Cada oveja con su pareja"
+
+[node name="CartapumButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Cartapum"
+
+[node name="InicialesButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Iniciales"
 
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2

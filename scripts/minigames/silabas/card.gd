@@ -2,6 +2,11 @@ extends "res://scripts/shared/base_card.gd"
 
 func _ready():
 	super._ready()
+	
+	# Ensure hover effects are applied to sílabas cards
+	if GameManager:
+		GameManager.add_hover_effect(self)
+		GameManager.add_click_feedback(self)
 
 func _input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
@@ -12,11 +17,25 @@ func _input_event(_viewport, event, _shape_idx):
 			elif is_dragging:
 				is_dragging = false
 				if current_slot != null:
-					var game = get_node("/root/Game")
-					if game:
+					# Buscar el nodo del juego de manera más robusta
+					var game = get_tree().get_current_scene()
+					if game and game.has_method("intentar_colocar_tarjeta"):
 						game.intentar_colocar_tarjeta(self, current_slot)
 				else:
-					volver_a_posicion_inicial()
+					# --- AUTOSNAP: buscar hueco más cercano ---
+					var game = get_tree().get_current_scene()
+					if game and game.has_node("Huecos"):
+						var min_dist = 99999
+						var closest_slot = null
+						for h in game.get_node("Huecos").get_children():
+							var dist = position.distance_to(h.position)
+							if dist < min_dist:
+								min_dist = dist
+								closest_slot = h
+						if closest_slot != null and min_dist < 80:
+							game.intentar_colocar_tarjeta(self, closest_slot)
+						else:
+							volver_a_posicion_inicial()
 
 func volver_a_posicion_inicial():
 	position = start_position

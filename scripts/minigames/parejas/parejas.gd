@@ -1,51 +1,71 @@
 extends Control
 
 const CardScene = preload("res://scenes/minigames/parejas/card.tscn")
+const AnimationsScene = preload("res://scenes/shared/animations.tscn")
 
 var lives: int = 3
 var selected_card = null
 var pairs = []
 var matched_pairs = 0
+var max_pairs_per_game: int = 3  # Parameter to control how many pairs to show
+var animations: Node
+var total_attempts = 0
+var correct_attempts = 0
 
 func _ready():
+	# Add animations system
+	animations = AnimationsScene.instantiate()
+	add_child(animations)
+	
 	load_pairs()
 	create_cards()
 	update_lives_display()
+	if has_node("BotonVolver"):
+		$BotonVolver.pressed.connect(_on_boton_volver_pressed)
 
 func load_pairs():
-	# Load images from the animales folder
-	var dir = DirAccess.open("res://assets/animales")
+	# Solo obtener los nombres de archivo primero
+	var dir = DirAccess.open("res://assets/images")
+	var image_files = []
 	if dir:
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
-			if file_name.ends_with(".png") or file_name.ends_with(".jpg"):
-				var image_path = "res://assets/animales/" + file_name
-				var texture = load(image_path)
-				var name = file_name.get_basename().capitalize()
-				pairs.append({
-					"texture": texture,
-					"name": name
-				})
+			if file_name.ends_with(".png") or file_name.ends_with(".jpg") or file_name.ends_with(".jpeg"):
+				image_files.append(file_name)
 			file_name = dir.get_next()
-	
-	# Shuffle the pairs
-	pairs.shuffle()
+
+	# Mezclar y seleccionar solo los necesarios
+	image_files.shuffle()
+	var selected_files = image_files.slice(0, max_pairs_per_game)
+
+	# Cargar solo las imágenes seleccionadas
+	for file_name in selected_files:
+		var image_path = "res://assets/images/" + file_name
+		var texture = load(image_path)
+		var name = file_name.get_basename().capitalize()
+		pairs.append({
+			"texture": texture,
+			"name": name
+		})
 
 func create_cards():
+	# Limit to max_pairs_per_game pairs
+	var pairs_to_use = pairs.slice(0, max_pairs_per_game)
+	
 	# Create image cards
-	for i in range(pairs.size()):
+	for i in range(pairs_to_use.size()):
 		var card = CardScene.instantiate()
 		$VBoxContainer/ImageCards.add_child(card)
-		card.setup(pairs[i].texture, "", true, i)
+		card.setup(pairs_to_use[i].texture, "", true, i, Color(1, 1, 1, 1))
 		card.card_clicked.connect(_on_card_clicked)
 	
 	# Create text cards
 	var text_cards = []
-	for i in range(pairs.size()):
+	for i in range(pairs_to_use.size()):
 		var card = CardScene.instantiate()
 		text_cards.append(card)
-		card.setup(null, pairs[i].name, false, i)
+		card.setup(null, pairs_to_use[i].name, false, i)
 		card.card_clicked.connect(_on_card_clicked)
 	
 	# Shuffle text cards
@@ -71,14 +91,20 @@ func _on_card_clicked(card):
 			selected_card.mark_as_matched()
 			card.mark_as_matched()
 			matched_pairs += 1
+			correct_attempts += 1
+			total_attempts += 1
 			
-			if matched_pairs == pairs.size():
+			# Show small completion animation
+			animations.show_pair_matched()
+			
+			if matched_pairs == max_pairs_per_game:
 				# Game won
-				show_game_over(true)
+				show_game_completion()
 		else:
 			# Wrong match
 			lives -= 1
 			update_lives_display()
+			total_attempts += 1
 			
 			if lives <= 0:
 				show_game_over(false)
@@ -92,12 +118,25 @@ func _on_card_clicked(card):
 		selected_card = null
 
 func update_lives_display():
-	$VBoxContainer/TopBar/Lives.actualizar_vidas(lives)
+	$Lives.actualizar_vidas(lives)
+
+func show_game_completion():
+	# Calculate stars based on performance
+	var stars_earned = 3
+	if lives < 3:
+		stars_earned = max(1, 3 - (3 - lives))
+	
+	# Show game completion animation
+	animations.show_game_completion(100, stars_earned, total_attempts, correct_attempts)
+	animations.game_completion_finished.connect(func(): get_tree().reload_current_scene())
 
 func show_game_over(won: bool):
 	var dialog = AcceptDialog.new()
 	add_child(dialog)
 	dialog.title = "Fin del juego"
-	dialog.dialog_text = "¡Has ganado!" if won else "¡Has perdido!"
+	dialog.dialog_text = "¡Has perdido!"
 	dialog.confirmed.connect(func(): get_tree().reload_current_scene())
-	dialog.popup_centered() 
+	dialog.popup_centered()
+
+func _on_boton_volver_pressed():
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn") 

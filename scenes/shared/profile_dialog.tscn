@@ -1,0 +1,172 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqxvh8yqxqxqx"]
+
+[ext_resource type="Script" path="res://scripts/shared/profile_dialog.gd" id="1_0xqxq"]
+
+[node name="ProfileDialog" type="AcceptDialog"]
+title = "Perfil de Usuario"
+initial_position = 1
+size = Vector2i(350, 400)
+min_size = Vector2i(300, 350)
+script = ExtResource("1_0xqxq")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="ProfileView" type="VBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="WelcomeLabel" type="Label" parent="ScrollContainer/VBoxContainer/ProfileView"]
+layout_mode = 2
+text = "¡Bienvenido!"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="UserInfo" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/ProfileView"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="DisplayNameLabel" type="Label" parent="ScrollContainer/VBoxContainer/ProfileView/UserInfo"]
+layout_mode = 2
+text = "Nombre: Usuario"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="EmailLabel" type="Label" parent="ScrollContainer/VBoxContainer/ProfileView/UserInfo"]
+layout_mode = 2
+text = "Email: usuario@ejemplo.com"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="ScrollContainer/VBoxContainer/ProfileView"]
+layout_mode = 2
+
+[node name="LogoutButton" type="Button" parent="ScrollContainer/VBoxContainer/ProfileView"]
+layout_mode = 2
+text = "Cerrar Sesión"
+
+[node name="LoginView" type="VBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LoginTitle" type="Label" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+text = "Iniciar Sesión"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+
+[node name="GoogleSignInButton" type="Button" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+text = "🔑 Continuar con Google"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color_hover = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_color_pressed = Color(0.8, 0.8, 0.8, 1)
+
+[node name="OrSeparator" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+
+[node name="Line1" type="HSeparator" parent="ScrollContainer/VBoxContainer/LoginView/OrSeparator"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OrLabel" type="Label" parent="ScrollContainer/VBoxContainer/LoginView/OrSeparator"]
+layout_mode = 2
+text = " o "
+horizontal_alignment = 1
+
+[node name="Line2" type="HSeparator" parent="ScrollContainer/VBoxContainer/LoginView/OrSeparator"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LoginForm" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EmailLabel" type="Label" parent="ScrollContainer/VBoxContainer/LoginView/LoginForm"]
+layout_mode = 2
+text = "Email:"
+
+[node name="EmailInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/LoginView/LoginForm"]
+layout_mode = 2
+placeholder_text = "tu@email.com"
+
+[node name="PasswordLabel" type="Label" parent="ScrollContainer/VBoxContainer/LoginView/LoginForm"]
+layout_mode = 2
+text = "Contraseña:"
+
+[node name="PasswordInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/LoginView/LoginForm"]
+layout_mode = 2
+placeholder_text = "Tu contraseña"
+secret = true
+
+[node name="LoginButton" type="Button" parent="ScrollContainer/VBoxContainer/LoginView/LoginForm"]
+layout_mode = 2
+text = "Iniciar Sesión"
+
+[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+
+[node name="RegisterTitle" type="Label" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+text = "¿No tienes cuenta? Regístrate"
+horizontal_alignment = 1
+
+[node name="RegisterForm" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/LoginView"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RegEmailLabel" type="Label" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+text = "Email:"
+
+[node name="RegEmailInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+placeholder_text = "tu@email.com"
+
+[node name="RegPasswordLabel" type="Label" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+text = "Contraseña:"
+
+[node name="RegPasswordInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+placeholder_text = "Mínimo 6 caracteres"
+secret = true
+
+[node name="RegNameLabel" type="Label" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+text = "Nombre (opcional):"
+
+[node name="RegNameInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+placeholder_text = "Tu nombre"
+
+[node name="RegisterButton" type="Button" parent="ScrollContainer/VBoxContainer/LoginView/RegisterForm"]
+layout_mode = 2
+text = "Registrarse"
+
+[node name="ErrorLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="InfoLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Puedes jugar sin iniciar sesión, pero al registrarte podrás guardar tu progreso."
+horizontal_alignment = 1
+autowrap_mode = 2 

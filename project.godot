@@ -15,6 +15,11 @@ run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GameManager="*res://scripts/shared/game_manager.gd"
+FirebaseAuth="*res://scripts/shared/firebase_auth.gd"
+
 [rendering]
 
-renderer/rendering_method="mobile"
+renderer/rendering_method="gl_compatibility"

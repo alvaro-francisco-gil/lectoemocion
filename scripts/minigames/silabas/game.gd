@@ -6,36 +6,56 @@ signal juego_terminado
 @export var escena_tarjeta : PackedScene
 @export var escena_hueco : PackedScene
 
+const AnimationsScene = preload("res://scenes/shared/animations.tscn")
+
 @onready var nodo_huecos = $Huecos
 @onready var nodo_tarjetas = $Tarjetas
 @onready var nodo_vidas = $Vidas
 @onready var nodo_fondo = $Fondo
 @onready var boton_volver = $UI/BotonVolver
 
-# Diccionario de palabras y sus sílabas
-var palabras = {
-	"elefante": {
-		"silabas": ["e", "le", "fan", "te"],
-		"imagen": "res://assets/animales/e-le-fan-te.png"
-	},
-	"mariposa": {
-		"silabas": ["ma", "ri", "po", "sa"],
-		"imagen": "res://assets/animales/ma-ri-po-sa.png"
-	},
-	"cerdo": {
-		"silabas": ["cer", "do"],
-		"imagen": "res://assets/animales/cer-do.png"
-	}
-}
-
+# Dictionary to store words and their data (loaded dynamically)
+var palabras = {}
 var palabra_actual = ""
 var tarjetas_colocadas = 0
 var total_tarjetas = 0
 var vidas = 3
-var imagen_actual: Sprite2D
+var imagen_actual: Control
+var animations: Node
+var total_attempts = 0
+var correct_attempts = 0
+var acierto_sound: AudioStreamPlayer
+var error_sound: AudioStreamPlayer
 
 func _ready():
 	print("GestorJuego iniciado")
+	# Forzar color de fondo verde turquesa
+	if has_node("Background"):
+		$Background.color = Color(0.2, 0.95, 0.85, 1.0)
+	
+	# Add animations system
+	animations = AnimationsScene.instantiate()
+	add_child(animations)
+	
+	# Load success sound
+	var sound_stream = load("res://assets/sounds/sonido acierto.mp3")
+	if sound_stream:
+		print("Sonido de acierto cargado correctamente")
+		acierto_sound = AudioStreamPlayer.new()
+		acierto_sound.stream = sound_stream
+		add_child(acierto_sound)
+	else:
+		print("ERROR: No se pudo cargar el sonido de acierto")
+	
+	# Load error sound
+	var error_stream = load("res://assets/sounds/sonido error.mp3")
+	if error_stream:
+		print("Sonido de error cargado correctamente")
+		error_sound = AudioStreamPlayer.new()
+		error_sound.stream = error_stream
+		add_child(error_sound)
+	else:
+		print("ERROR: No se pudo cargar el sonido de error")
 	
 	# Asegurarse de que el nodo de vidas existe
 	if not nodo_vidas:
@@ -50,9 +70,56 @@ func _ready():
 	# Ajustar el fondo a la pantalla
 	ajustar_fondo()
 	
+	# Ajustar el fondo de nubes para que cubra toda la pantalla
+	if has_node("FondoNubes") and $FondoNubes.texture:
+		var ventana = get_viewport_rect().size
+		var tex = $FondoNubes.texture
+		var escala_x = ventana.x / tex.get_width()
+		var escala_y = ventana.y / tex.get_height()
+		var escala = max(escala_x, escala_y)
+		$FondoNubes.scale = Vector2(escala, escala)
+		$FondoNubes.position = ventana / 2
+	
+	# Cargar palabras dinámicamente desde assets/images
+	cargar_palabras_desde_imagenes()
+	
 	# Inicializar el juego
 	seleccionar_palabra_aleatoria()
 	emit_signal("vidas_actualizadas", vidas)
+	
+	# Ajustar el fondo turquesa para que cubra toda la pantalla
+	if has_node("Background"):
+		$Background.position = Vector2.ZERO
+		$Background.size = get_viewport_rect().size
+	get_viewport().connect("size_changed", Callable(self, "_on_viewport_size_changed"))
+	centrar_vidas()
+
+func cargar_palabras_desde_imagenes():
+	var dir = DirAccess.open("res://assets/images")
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".png") or file_name.ends_with(".jpg") or file_name.ends_with(".jpeg"):
+				# Extraer la palabra y sílabas del nombre del archivo
+				var nombre_base = file_name.get_basename()
+				if nombre_base.contains("-"):
+					var silabas = nombre_base.split("-")
+					var palabra = nombre_base.replace("-", "")
+					
+					# Solo incluir palabras con al menos 2 sílabas
+					if silabas.size() >= 2:
+						palabras[palabra] = {
+							"silabas": silabas,
+							"imagen": "res://assets/images/" + file_name
+						}
+						print("Palabra cargada: ", palabra, " con sílabas: ", silabas)
+			
+			file_name = dir.get_next()
+		
+		print("Total de palabras cargadas: ", palabras.size())
+	else:
+		print("ERROR: No se pudo abrir el directorio assets/images")
 
 func ajustar_fondo():
 	if nodo_fondo and nodo_fondo.texture:
@@ -65,6 +132,10 @@ func ajustar_fondo():
 
 func seleccionar_palabra_aleatoria():
 	var palabras_disponibles = palabras.keys()
+	if palabras_disponibles.size() == 0:
+		print("ERROR: No hay palabras disponibles!")
+		return
+		
 	palabra_actual = palabras_disponibles[randi() % palabras_disponibles.size()]
 	print("Palabra seleccionada: ", palabra_actual)
 	crear_partida(palabras[palabra_actual]["silabas"])
@@ -75,28 +146,63 @@ func actualizar_imagen(ruta_imagen: String):
 	if imagen_actual:
 		imagen_actual.queue_free()
 	
+	# Crear contenedor para la imagen con borde
+	var contenedor = Control.new()
+	contenedor.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	
+	# Crear el panel con borde verde transparente
+	var panel = Panel.new()
+	var stylebox = StyleBoxFlat.new()
+	stylebox.bg_color = Color(0, 0, 0, 0)  # Transparente
+	stylebox.border_width_left = 8
+	stylebox.border_width_top = 8
+	stylebox.border_width_right = 8
+	stylebox.border_width_bottom = 8
+	stylebox.border_color = Color(0.2, 0.8, 0.2, 1.0)  # Verde para el borde
+	stylebox.corner_radius_top_left = 15
+	stylebox.corner_radius_top_right = 15
+	stylebox.corner_radius_bottom_right = 15
+	stylebox.corner_radius_bottom_left = 15
+	panel.add_theme_stylebox_override("panel", stylebox)
+	
 	# Crear nueva imagen
-	imagen_actual = Sprite2D.new()
+	var sprite_imagen = Sprite2D.new()
 	var textura = load(ruta_imagen)
-	imagen_actual.texture = textura
+	sprite_imagen.texture = textura
 	
 	# Obtener el tamaño de la ventana
 	var ventana = get_viewport_rect().size
 	
 	# Calcular la escala para mantener las proporciones
-	var tamaño_deseado = Vector2(300, 300)  # Tamaño máximo deseado (más grande)
+	var tamaño_deseado = Vector2(300, 300)  # Tamaño máximo deseado
 	var escala_x = tamaño_deseado.x / textura.get_width()
 	var escala_y = tamaño_deseado.y / textura.get_height()
 	var escala_final = min(escala_x, escala_y)  # Usar la escala más pequeña para mantener proporciones
 	
-	imagen_actual.scale = Vector2(escala_final, escala_final)
+	sprite_imagen.scale = Vector2(escala_final, escala_final)
+	sprite_imagen.centered = true
 	
-	# Centrar la imagen en medio de la pantalla
-	imagen_actual.position = Vector2(ventana.x / 2, ventana.y / 2)
-	# Ajustar el origen de la imagen al centro
-	imagen_actual.centered = true
+	# Configurar el panel para contener la imagen correctamente
+	var tamaño_imagen = textura.get_size() * escala_final
+	panel.size = tamaño_imagen + Vector2(16, 16)  # 8px de borde en cada lado
 	
-	add_child(imagen_actual)
+	# Agregar la imagen al panel
+	panel.add_child(sprite_imagen)
+	sprite_imagen.position = panel.size / 2
+	
+	# Agregar el panel al contenedor
+	contenedor.add_child(panel)
+	panel.position = Vector2.ZERO
+	
+	# Colocar el contenedor centrado horizontalmente y arriba de los huecos
+	contenedor.position = Vector2(ventana.x / 2 - panel.size.x / 2, 90)  # Centrado y arriba de los huecos
+	
+	add_child(contenedor)
+	imagen_actual = contenedor  # Guardar referencia al contenedor
+	
+	# Asegurar que el nodo Tarjetas esté al frente
+	if has_node("Tarjetas"):
+		move_child($Tarjetas, get_child_count() - 1)
 
 func crear_partida(silabas: Array):
 	print("Creando partida con sílabas: ", silabas)
@@ -105,39 +211,43 @@ func crear_partida(silabas: Array):
 		c.queue_free()
 	for c in nodo_tarjetas.get_children():
 		c.queue_free()
-	
 	tarjetas_colocadas = 0  # Reiniciar contador
 	total_tarjetas = silabas.size()  # Establecer el total de tarjetas basado en las sílabas
-	
 	# Obtener el tamaño de la ventana
 	var ventana = get_viewport_rect().size
-	
-	# Calcular posición inicial para centrar los huecos
-	var ancho_total_huecos = silabas.size() * 120  # 120 es el espacio entre huecos
-	var posicion_inicial_x = (ventana.x - ancho_total_huecos) / 2
-	
-	# Crea los huecos en orden (abajo)
+	# Calcular posición inicial para centrar los huecos y tarjetas
+	var espacio = 120
+	var ancho_total = silabas.size() * espacio
+	var posicion_inicial_x = (ventana.x - ancho_total) / 2 + espacio / 2
+	# Crea los huecos en orden (arriba)
 	for i in range(silabas.size()):
 		var hueco = escena_hueco.instantiate()
 		hueco.hueco_id = i
-		hueco.position = Vector2(posicion_inicial_x + i * 120, ventana.y - 100)  # Posición abajo
+		hueco.position = Vector2(posicion_inicial_x + i * espacio, 400)  # Más abajo
 		hueco.connect("tarjeta_colocada", Callable(self, "_on_tarjeta_colocada"))
 		nodo_huecos.add_child(hueco)
 		print("Hueco creado en posición: ", hueco.position)
-	
-	# Crea las tarjetas y las desordena (arriba)
+	# Crea las tarjetas y las desordena (abajo), asegurando que ninguna quede en su sitio
 	var silabas_desordenadas = silabas.duplicate()
-	silabas_desordenadas.shuffle()
-	
+	var valido = false
+	while not valido:
+		silabas_desordenadas.shuffle()
+		valido = true
+		for i in range(silabas.size()):
+			if silabas_desordenadas[i] == silabas[i]:
+				valido = false
+				break
 	for i in range(silabas.size()):
 		var idx = silabas.find(silabas_desordenadas[i])
 		var tarjeta = escena_tarjeta.instantiate()
 		tarjeta.silaba_id = idx
 		tarjeta.card_text = silabas_desordenadas[i]
 		tarjeta.actualizar_label()
-		tarjeta.position = Vector2(posicion_inicial_x + i * 120, 100)  # Posición arriba
+		tarjeta.position = Vector2(posicion_inicial_x + i * espacio, 500)  # Abajo
 		nodo_tarjetas.add_child(tarjeta)
 		print("Tarjeta creada: ", silabas_desordenadas[i], " con ID: ", idx)
+	# Ajustar el ancho de la tira según el número de huecos
+	ajustar_tira_silabas(silabas.size())
 
 func intentar_colocar_tarjeta(tarjeta, hueco):
 	if hueco.tarjeta_actual == null:
@@ -145,41 +255,61 @@ func intentar_colocar_tarjeta(tarjeta, hueco):
 			# Colocación correcta
 			hueco.aceptar_tarjeta(tarjeta)
 			tarjetas_colocadas += 1
+			correct_attempts += 1
+			total_attempts += 1
 			print("Tarjeta colocada correctamente. Total: ", tarjetas_colocadas, "/", total_tarjetas)
 			
+			# Play success sound
+			if acierto_sound:
+				print("Reproduciendo sonido de acierto")
+				acierto_sound.play()
+			else:
+				print("ERROR: acierto_sound es null")
+			
+			# Show small completion animation
+			animations.show_syllable_correct()
 			# Verificar si se completó el nivel
 			if tarjetas_colocadas == total_tarjetas:
 				print("¡Nivel completado!")
-				# Esperar un momento antes de cambiar de palabra
-				get_tree().create_timer(1.0).timeout.connect(func():
-					seleccionar_palabra_aleatoria()
-				)
+				# Show full game completion animation with stars
+				animations.show_game_completion(100, 3, total_attempts, correct_attempts)
+				# Wait for the animation to finish before continuing
+				await animations.game_completion_finished
+				# Then change to a new word
+				seleccionar_palabra_aleatoria()
 		else:
-			# Colocación incorrecta
-			hueco.mostrar_error()
+			# Devolver la tarjeta a su posición original inmediatamente
+			tarjeta.position = tarjeta.start_position
+			tarjeta.can_drag = true
+			hueco.liberar_tarjeta()
+			
+			# Play error sound
+			if error_sound:
+				print("Reproduciendo sonido de error")
+				error_sound.play()
+			else:
+				print("ERROR: error_sound es null")
+			
+			# Colocación incorrecta: poner todos los huecos en rojo
+			for h in nodo_huecos.get_children():
+				if h.has_method("mostrar_error_rojo"):
+					h.mostrar_error_rojo()
 			vidas -= 1
+			total_attempts += 1
 			print("Vidas restantes: ", vidas)
 			emit_signal("vidas_actualizadas", vidas)
-			
+			# Restaurar todos los huecos tras 0.5 segundos
+			await get_tree().create_timer(0.5).timeout
+			for h in nodo_huecos.get_children():
+				if h.has_method("restaurar_estado"):
+					h.restaurar_estado()
 			if vidas <= 0:
 				print("¡Juego terminado! Sin vidas restantes")
 				emit_signal("juego_terminado")
-			else:
-				# Devolver la tarjeta a su posición original
-				tarjeta.position = tarjeta.start_position
-				tarjeta.can_drag = true
-				hueco.liberar_tarjeta()
 
 func _on_tarjeta_colocada(hueco_id: int, _tarjeta_id: int):
 	# Ya no necesitamos esta función ya que la lógica está en intentar_colocar_tarjeta
 	pass
-
-# Función para añadir nuevas palabras al diccionario
-func añadir_palabra(palabra: String, silabas: Array, imagen: String):
-	palabras[palabra] = {
-		"silabas": silabas,
-		"imagen": imagen
-	}
 
 func _on_juego_terminado():
 	print("¡Juego terminado! Reiniciando...")
@@ -189,3 +319,53 @@ func _on_juego_terminado():
 
 func _on_boton_volver_pressed():
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+func _on_viewport_size_changed():
+	if has_node("Background"):
+		$Background.size = get_viewport_rect().size
+	# Ajustar el fondo de nubes al cambiar el tamaño de la ventana
+	if has_node("FondoNubes") and $FondoNubes.texture:
+		var ventana = get_viewport_rect().size
+		var tex = $FondoNubes.texture
+		var escala_x = ventana.x / tex.get_width()
+		var escala_y = ventana.y / tex.get_height()
+		var escala = max(escala_x, escala_y)
+		$FondoNubes.scale = Vector2(escala, escala)
+		$FondoNubes.position = ventana / 2
+	
+	# Reposicionar la imagen actual si existe
+	if imagen_actual:
+		var ventana = get_viewport_rect().size
+		# Obtener el panel del contenedor para calcular el tamaño
+		var panel = imagen_actual.get_child(0) if imagen_actual.get_child_count() > 0 else null
+		if panel:
+			imagen_actual.position = Vector2(ventana.x / 2 - panel.size.x / 2, 150)
+		else:
+			imagen_actual.position = Vector2(ventana.x / 2, 150)
+	
+	centrar_vidas()
+
+func centrar_vidas():
+	if has_node("Vidas"):
+		var ventana = get_viewport_rect().size
+		var vidas = $Vidas
+		if vidas.has_node("HBoxContainer"):
+			var hbox = vidas.get_node("HBoxContainer")
+			vidas.position = Vector2(ventana.x / 2 - hbox.size.x / 2, 30)
+		else:
+			vidas.position = Vector2(ventana.x / 2, 30)
+
+func ajustar_tira_silabas(num_huecos: int):
+	if has_node("TiraSilabas"):
+		var tira = $TiraSilabas
+		# Nuevos anchos: 2 sílabas = 360px, 3 sílabas = 540px, 4 sílabas = 720px
+		var ancho_deseado := 360.0 if num_huecos == 2 else 540.0 if num_huecos == 3 else 720.0
+		if num_huecos > 4:
+			ancho_deseado = 720.0 * num_huecos / 4.0
+		if tira.texture != null:
+			var ancho_original = tira.texture.get_width()
+			var escala_x = ancho_deseado / ancho_original
+			tira.scale.x = escala_x
+			print("Tira ajustada: ", num_huecos, " huecos, escala X: ", escala_x)
+		else:
+			print("[ADVERTENCIA] La textura de la tira de sílabas no está asignada.")
