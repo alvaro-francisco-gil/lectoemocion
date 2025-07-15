@@ -1,6 +1,6 @@
 extends Control
 
-const CardScene = preload("res://scenes/minigames/parejas/card.tscn")
+const CardScene = preload("res://scenes/minigames/iniciales/iniciales_card.tscn")
 
 var lives: int = 3
 var current_letter: String = ""
@@ -157,7 +157,7 @@ func place_images_in_big_card(big_card: Panel):
 		var col = i % cols
 		
 		var card = CardScene.instantiate()
-		card.setup(remaining_images[i].texture, "", true, i, Color(1, 1, 1, 1))
+		card.setup(remaining_images[i].texture, "", true, i, Color(1, 1, 1, 1), remaining_images[i].initial_letter)
 		card.card_clicked.connect(_on_card_clicked.bind(i))
 		
 		# Position the card within the big card boundaries
@@ -247,7 +247,7 @@ func _on_card_clicked(clicked_card, image_index: int):
 	print("Clicked image word: ", clicked_image.word, " - Initial letter: ", clicked_image.initial_letter)
 	
 	# Check if the image starts with the current letter
-	if clicked_image.initial_letter == current_letter:
+	if clicked_card.get_initial_letter() == current_letter:
 		# Correct selection!
 		correct_selections += 1
 		

@@ -1,6 +1,6 @@
 extends Control
 
-const CardScene = preload("res://scenes/minigames/parejas/card.tscn")
+const CardScene = preload("res://scenes/minigames/parejas/parejas_card.tscn")
 const AnimationsScene = preload("res://scenes/shared/animations.tscn")
 
 var lives: int = 3

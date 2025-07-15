@@ -1,6 +1,6 @@
 extends Control
 
-const CardScene = preload("res://scenes/minigames/parejas/card.tscn")
+const CardScene = preload("res://scenes/minigames/cartapum/cartapum_card.tscn")
 const AnimationsScene = preload("res://scenes/shared/animations.tscn")
 
 var animations: Node
@@ -64,7 +64,7 @@ func create_new_round():
 	var word_card = CardScene.instantiate()
 	$VBoxContainer/WordCard.add_child(word_card)
 	word_card.setup(null, current_word, false, -1)
-	word_card.disabled = true  # Make it non-clickable
+	word_card.set_disabled(true)  # Make it non-clickable
 	
 	# Force the word card to be much lower by changing its position
 	$VBoxContainer/WordCard.position.y = 350

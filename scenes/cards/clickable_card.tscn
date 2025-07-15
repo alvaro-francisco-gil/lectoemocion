@@ -1,12 +1,12 @@
 [gd_scene load_steps=2 format=3 uid="uid://c5nb6hcvm5jpm"]
 
-[ext_resource type="Script" path="res://scripts/minigames/parejas/card.gd" id="1_2k4m3"]
+[ext_resource type="Script" path="res://scripts/cards/clickable_card.gd" id="1_clickable"]
 
-[node name="Card" type="Button"]
+[node name="ClickableCard" type="Panel"]
 custom_minimum_size = Vector2(200, 200)
 offset_right = 200.0
 offset_bottom = 200.0
-script = ExtResource("1_2k4m3")
+script = ExtResource("1_clickable")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 offset_left = 10.0

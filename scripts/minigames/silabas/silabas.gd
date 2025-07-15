@@ -3,7 +3,7 @@ extends Node2D
 signal vidas_actualizadas(vidas_restantes)
 signal juego_terminado
 
-@export var escena_tarjeta : PackedScene
+@export var escena_tarjeta : PackedScene = preload("res://scenes/minigames/silabas/silabas_card.tscn")
 @export var escena_hueco : PackedScene
 
 const AnimationsScene = preload("res://scenes/shared/animations.tscn")
@@ -173,8 +173,8 @@ func actualizar_imagen(ruta_imagen: String):
 	# Obtener el tamaño de la ventana
 	var ventana = get_viewport_rect().size
 	
-	# Calcular la escala para mantener las proporciones
-	var tamaño_deseado = Vector2(300, 300)  # Tamaño máximo deseado
+	# Calcular la escala para mantener las proporciones de forma dinámica
+	var tamaño_deseado = Vector2(ventana.x * 0.25, ventana.y * 0.25)  # 25% del tamaño de pantalla
 	var escala_x = tamaño_deseado.x / textura.get_width()
 	var escala_y = tamaño_deseado.y / textura.get_height()
 	var escala_final = min(escala_x, escala_y)  # Usar la escala más pequeña para mantener proporciones
@@ -195,7 +195,7 @@ func actualizar_imagen(ruta_imagen: String):
 	panel.position = Vector2.ZERO
 	
 	# Colocar el contenedor centrado horizontalmente y arriba de los huecos
-	contenedor.position = Vector2(ventana.x / 2 - panel.size.x / 2, 90)  # Centrado y arriba de los huecos
+	contenedor.position = Vector2(ventana.x / 2 - panel.size.x / 2, ventana.y * 0.15)  # Centrado y arriba de los huecos
 	
 	add_child(contenedor)
 	imagen_actual = contenedor  # Guardar referencia al contenedor
@@ -213,21 +213,30 @@ func crear_partida(silabas: Array):
 		c.queue_free()
 	tarjetas_colocadas = 0  # Reiniciar contador
 	total_tarjetas = silabas.size()  # Establecer el total de tarjetas basado en las sílabas
+	
 	# Obtener el tamaño de la ventana
 	var ventana = get_viewport_rect().size
-	# Calcular posición inicial para centrar los huecos y tarjetas
-	var espacio = 120
-	var ancho_total = silabas.size() * espacio
-	var posicion_inicial_x = (ventana.x - ancho_total) / 2 + espacio / 2
-	# Crea los huecos en orden (arriba)
+	
+	# Calcular espaciado dinámico basado en el ancho de la pantalla
+	var espacio_minimo = 120
+	var espacio_dinamico = max(espacio_minimo, ventana.x * 0.08)  # 8% del ancho de pantalla
+	var ancho_total = silabas.size() * espacio_dinamico
+	var posicion_inicial_x = (ventana.x - ancho_total) / 2 + espacio_dinamico / 2
+	
+	# Calcular posiciones verticales centradas dinámicamente
+	var posicion_huecos_y = ventana.y * 0.45  # 45% desde arriba
+	var posicion_tarjetas_y = ventana.y * 0.75  # 75% desde arriba
+	
+	# Crea los huecos en orden (centrados)
 	for i in range(silabas.size()):
 		var hueco = escena_hueco.instantiate()
 		hueco.hueco_id = i
-		hueco.position = Vector2(posicion_inicial_x + i * espacio, 400)  # Más abajo
+		hueco.position = Vector2(posicion_inicial_x + i * espacio_dinamico, posicion_huecos_y)
 		hueco.connect("tarjeta_colocada", Callable(self, "_on_tarjeta_colocada"))
 		nodo_huecos.add_child(hueco)
 		print("Hueco creado en posición: ", hueco.position)
-	# Crea las tarjetas y las desordena (abajo), asegurando que ninguna quede en su sitio
+	
+	# Crea las tarjetas y las desordena (centradas abajo), asegurando que ninguna quede en su sitio
 	var silabas_desordenadas = silabas.duplicate()
 	var valido = false
 	while not valido:
@@ -237,15 +246,15 @@ func crear_partida(silabas: Array):
 			if silabas_desordenadas[i] == silabas[i]:
 				valido = false
 				break
+	
 	for i in range(silabas.size()):
 		var idx = silabas.find(silabas_desordenadas[i])
 		var tarjeta = escena_tarjeta.instantiate()
-		tarjeta.silaba_id = idx
-		tarjeta.card_text = silabas_desordenadas[i]
-		tarjeta.actualizar_label()
-		tarjeta.position = Vector2(posicion_inicial_x + i * espacio, 500)  # Abajo
+		tarjeta.setup(silabas_desordenadas[i], idx)
+		tarjeta.position = Vector2(posicion_inicial_x + i * espacio_dinamico, posicion_tarjetas_y)
 		nodo_tarjetas.add_child(tarjeta)
 		print("Tarjeta creada: ", silabas_desordenadas[i], " con ID: ", idx)
+	
 	# Ajustar el ancho de la tira según el número de huecos
 	ajustar_tira_silabas(silabas.size())
 
@@ -339,9 +348,13 @@ func _on_viewport_size_changed():
 		# Obtener el panel del contenedor para calcular el tamaño
 		var panel = imagen_actual.get_child(0) if imagen_actual.get_child_count() > 0 else null
 		if panel:
-			imagen_actual.position = Vector2(ventana.x / 2 - panel.size.x / 2, 150)
+			imagen_actual.position = Vector2(ventana.x / 2 - panel.size.x / 2, ventana.y * 0.15)
 		else:
-			imagen_actual.position = Vector2(ventana.x / 2, 150)
+			imagen_actual.position = Vector2(ventana.x / 2, ventana.y * 0.15)
+	
+	# Reposicionar huecos y tarjetas si hay una partida activa
+	if palabra_actual != "" and palabras.has(palabra_actual):
+		reposicionar_elementos_juego()
 	
 	centrar_vidas()
 
@@ -351,17 +364,16 @@ func centrar_vidas():
 		var vidas = $Vidas
 		if vidas.has_node("HBoxContainer"):
 			var hbox = vidas.get_node("HBoxContainer")
-			vidas.position = Vector2(ventana.x / 2 - hbox.size.x / 2, 30)
+			vidas.position = Vector2(ventana.x / 2 - hbox.size.x / 2, ventana.y * 0.05)
 		else:
-			vidas.position = Vector2(ventana.x / 2, 30)
+			vidas.position = Vector2(ventana.x / 2, ventana.y * 0.05)
 
 func ajustar_tira_silabas(num_huecos: int):
 	if has_node("TiraSilabas"):
 		var tira = $TiraSilabas
-		# Nuevos anchos: 2 sílabas = 360px, 3 sílabas = 540px, 4 sílabas = 720px
-		var ancho_deseado := 360.0 if num_huecos == 2 else 540.0 if num_huecos == 3 else 720.0
-		if num_huecos > 4:
-			ancho_deseado = 720.0 * num_huecos / 4.0
+		var ventana = get_viewport_rect().size
+		# Calcular ancho dinámico basado en el tamaño de pantalla
+		var ancho_deseado = ventana.x * 0.6  # 60% del ancho de pantalla
 		if tira.texture != null:
 			var ancho_original = tira.texture.get_width()
 			var escala_x = ancho_deseado / ancho_original
@@ -369,3 +381,34 @@ func ajustar_tira_silabas(num_huecos: int):
 			print("Tira ajustada: ", num_huecos, " huecos, escala X: ", escala_x)
 		else:
 			print("[ADVERTENCIA] La textura de la tira de sílabas no está asignada.")
+
+func reposicionar_elementos_juego():
+	"""Reposicionar huecos y tarjetas cuando cambia el tamaño de pantalla"""
+	if not palabra_actual or not palabras.has(palabra_actual):
+		return
+		
+	var silabas = palabras[palabra_actual]["silabas"]
+	var ventana = get_viewport_rect().size
+	
+	# Calcular espaciado dinámico
+	var espacio_minimo = 120
+	var espacio_dinamico = max(espacio_minimo, ventana.x * 0.08)
+	var ancho_total = silabas.size() * espacio_dinamico
+	var posicion_inicial_x = (ventana.x - ancho_total) / 2 + espacio_dinamico / 2
+	
+	# Posiciones verticales
+	var posicion_huecos_y = ventana.y * 0.45
+	var posicion_tarjetas_y = ventana.y * 0.75
+	
+	# Reposicionar huecos
+	var huecos = nodo_huecos.get_children()
+	for i in range(min(huecos.size(), silabas.size())):
+		huecos[i].position = Vector2(posicion_inicial_x + i * espacio_dinamico, posicion_huecos_y)
+	
+	# Reposicionar tarjetas
+	var tarjetas = nodo_tarjetas.get_children()
+	for i in range(min(tarjetas.size(), silabas.size())):
+		tarjetas[i].position = Vector2(posicion_inicial_x + i * espacio_dinamico, posicion_tarjetas_y)
+		# Actualizar posición inicial para las tarjetas
+		if tarjetas[i].has_method("set_start_position"):
+			tarjetas[i].set_start_position(Vector2(posicion_inicial_x + i * espacio_dinamico, posicion_tarjetas_y))

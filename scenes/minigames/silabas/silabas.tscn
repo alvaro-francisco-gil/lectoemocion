@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://blllmhqdk87n1"]
+[gd_scene load_steps=3 format=3 uid="uid://silabas_scene"]
 
-[ext_resource type="Script" path="res://scripts/minigames/silabas/game.gd" id="1_2u4vx"]
-[ext_resource type="PackedScene" uid="uid://c8j6y4v2n3q1p" path="res://scenes/minigames/silabas/card.tscn" id="2_3u4vx"]
+[ext_resource type="Script" path="res://scripts/minigames/silabas/silabas.gd" id="1_2u4vx"]
+[ext_resource type="PackedScene" path="res://scenes/minigames/silabas/silabas_card.tscn" id="2_3u4vx"]
 [ext_resource type="PackedScene" uid="uid://cgsd3irsuws0" path="res://scenes/minigames/silabas/slot.tscn" id="3_4u4vx"]
 [ext_resource type="PackedScene" uid="uid://b2j6h8g4y3n5k" path="res://scenes/shared/lives.tscn" id="4_5u4vx"]
 [ext_resource type="Texture2D" path="res://assets/fondos/fondo_de_nubes_de_colores.jpg" id="5"]

@@ -15,8 +15,13 @@ func _ready():
 	area.monitoring = true
 	area.monitorable = true
 	
+	# Calcular tamaño dinámico del hueco basado en el tamaño de pantalla
+	var ventana = get_viewport_rect().size
+	var shape_width = max(80, ventana.x * 0.06)  # 6% del ancho de pantalla, mínimo 80px
+	var shape_height = max(40, ventana.y * 0.06)  # 6% del alto de pantalla, mínimo 40px
+	var shape_size = Vector2(shape_width, shape_height)
+	
 	# Asegurarse de que el CollisionShape2D tenga el tamaño correcto
-	var shape_size = Vector2(100, 60)  # Tamaño exacto del hueco
 	if has_node("Area2D/CollisionShape2D"):
 		var shape = $Area2D/CollisionShape2D.shape
 		if shape is RectangleShape2D:

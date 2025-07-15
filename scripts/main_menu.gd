@@ -67,7 +67,7 @@ func _on_user_logged_out():
 	update_profile_button()
 
 func _on_silabas_button_pressed():
-	get_tree().change_scene_to_file("res://scenes/minigames/silabas/game.tscn")
+	get_tree().change_scene_to_file("res://scenes/minigames/silabas/silabas.tscn")
 
 func _on_parejas_button_pressed():
 	get_tree().change_scene_to_file("res://scenes/minigames/parejas/parejas.tscn")

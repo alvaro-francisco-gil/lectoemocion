@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3 uid="uid://f8qe9kf5m6o7p"]
+
+[ext_resource type="Script" path="res://scripts/minigames/silabas/silabas_card.gd" id="1_silabas"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(90, 50)
+
+[node name="SilabasCard" type="Panel"]
+custom_minimum_size = Vector2(90, 50)
+offset_right = 90.0
+offset_bottom = 50.0
+script = ExtResource("1_silabas")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 85.0
+offset_bottom = 45.0
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 16
+text = "Texto"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Area2D" type="Area2D" parent="."]
+monitoring = true
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_1") 
